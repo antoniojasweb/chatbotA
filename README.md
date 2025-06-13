@@ -1,1 +1,2 @@
-# chatbotA
+# chatbot
+Chatbot - Proyecto curso IA
