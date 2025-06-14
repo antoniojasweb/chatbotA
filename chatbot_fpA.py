@@ -34,7 +34,7 @@ import base64 # Necesario para incrustar audio directamente en HTML
 # import tempfile
 
 
-import sounddevice as sd
+#import sounddevice as sd
 from scipy.io.wavfile import write
 import speech_recognition as sr
 import tempfile
@@ -57,7 +57,7 @@ ModeloEvaluacion = 'all-mpnet-base-v2'  # Modelo para evaluación de respuestas
 
 # --- Configuración de la API de Gemini (Desde Colab, puedes dejar apiKey vacío para que Canvas lo gestione) ---
 # Si quieres usar modelos diferentes a gemini-2.0-flash o imagen-3.0-generate-002, proporciona una clave API aquí. De lo contrario, déjalo como está.
-API_KEY = "AIzaSyCf_fP-atrKzMJGwUgMCdHReTQtPoXKW8o"
+#API_KEY = ""
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
 # -------------------------------------------------------------------
 
