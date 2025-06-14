@@ -542,6 +542,19 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
         from pydub import AudioSegment
         from pydub.exceptions import CouldntDecodeError
 
+# --- DIAGNÓSTICO DE FFMPEG (Quitar después de verificar) ---
+import subprocess
+import sys
+st.write("Verificando FFmpeg...")
+try:
+    subprocess.run(["ffmpeg", "-version"], check=True, capture_output=True, text=True)
+    st.success("FFmpeg encontrado y accesible.")
+except (subprocess.CalledProcessError, FileNotFoundError) as e:
+    st.error(f"¡ERROR CRÍTICO! FFmpeg NO encontrado o no accesible. Por favor, instálalo en tu entorno de despliegue y asegúrate de que esté en el PATH. Detalles: {e}")
+    st.stop() # Detiene la ejecución si FFmpeg no está
+st.write("Verificación de FFmpeg completada.")
+# --- FIN DIAGNÓSTICO ---
+
         result = audio_recorder(
             interval=50,
             threshold=-60,
@@ -572,7 +585,7 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                 temp_audio_file_path = None # Initialize to None
 
                 try:
-                    audio_segment = AudioSegment.from_file(io.BytesIO(audio_bytes), format="webm")
+                    audio_segment = AudioSegment.from_file(audio_file, format="webm")
 
                     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
                         #temp_audio_file.write(audio_bytes)
