@@ -551,13 +551,13 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                 audio_data = result.get('audioData')
                 if audio_data:
                     # Decodificar el audio base64 y mostrarlo
-                    st.write("Audio grabado correctamente. Reproduciendo...")
+                    #st.write("Audio grabado correctamente. Reproduciendo...")
                     audio_bytes = base64.b64decode(audio_data)
                     audio_file = io.BytesIO(audio_bytes)
                     st.audio(audio_file, format="audio/webm")
                 else:
                     #pass
-                    st.error("No se ha grabado audio. Por favor, intenta de nuevo.")
+                    st.error("Repite")
             elif result.get('error'):
                     #st.error(f"Error: {result.get('error')}")
                     st.error("Error")
@@ -565,24 +565,29 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
             if audio_bytes is not None:
                 # Reconocer el audio y convertirlo a texto
                 recognizer = sr.Recognizer()
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
-                    temp_audio_file.write(audio_bytes)
-                    temp_audio_file_path = temp_audio_file.name
-                with sr.AudioFile(temp_audio_file_path) as source:
-                    audio = recognizer.record(source)
-                    try:
-                        text = recognizer.recognize_google(audio, language="es-ES")
-                        st.write("🗣️ Transcripción:", text)
-                        user_query = text
-                    except sr.UnknownValueError:
-                        st.error("No se pudo entender el audio.")
-                        user_query = None
-                    except sr.RequestError:
-                        st.error("Error al conectarse con el servicio de reconocimiento.")
-                        user_query = None
-            else:
-                st.write("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
-                user_query = None
+                temp_audio_file_path = None # Initialize to None
+
+                try:
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
+                        temp_audio_file.write(audio_bytes)
+                        temp_audio_file_path = temp_audio_file.name
+
+                    with sr.AudioFile(temp_audio_file_path) as source:
+                        audio = recognizer.record(source)
+                        try:
+                            text = recognizer.recognize_google(audio, language="es-ES")
+                            st.write("🗣️ Transcripción:", text)
+                            user_query = text
+                        except sr.UnknownValueError:
+                            st.error("No se pudo entender el audio.")
+                            user_query = None
+                        except sr.RequestError as e:
+                            st.error(f"Error al conectarse con el servicio de reconocimiento: {e}")
+                            user_query = None
+                finally:
+                    # Clean up the temporary file
+                    if temp_audio_file_path and os.path.exists(temp_audio_file_path):
+                        os.remove(temp_audio_file_path)
         else:
             #st.write("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
             user_query = None
