@@ -15,6 +15,7 @@ transformers
 torchaudio
 speechrecognition
 streamlit-realtime-audio-recorder
+pydub
 
 #pdf2docx
 #pickle
