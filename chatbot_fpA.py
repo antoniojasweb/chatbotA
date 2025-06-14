@@ -57,7 +57,7 @@ ModeloEvaluacion = 'all-mpnet-base-v2'  # Modelo para evaluación de respuestas
 
 # --- Configuración de la API de Gemini (Desde Colab, puedes dejar apiKey vacío para que Canvas lo gestione) ---
 # Si quieres usar modelos diferentes a gemini-2.0-flash o imagen-3.0-generate-002, proporciona una clave API aquí. De lo contrario, déjalo como está.
-#API_KEY = ""
+API_KEY = "AIzaSyCf_fP-atrKzMJGwUgMCdHReTQtPoXKW8o"
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
 # -------------------------------------------------------------------
 
@@ -340,7 +340,7 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     {context}
     ---
 
-    Basándote ÚNICAMENTE en la información proporcionada anteriormente y en tu conocimiento general, responde a la siguiente pregunta de forma concisa y útil. Si la información proporcionada no es suficiente para responder a la pregunta, indícalo. Muestra la información de forma clara y estructurada, incluyendo detalles como el nombre del ciclo, grado, instituto, municipio, provincia y familia profesional si es relevante. Agrupa los datos por instituto, si es posible.
+    Basándote ÚNICAMENTE en la información proporcionada anteriormente y en tu conocimiento general, responde a la siguiente pregunta de forma concisa y útil. Si la información proporcionada no es suficiente para responder a la pregunta, indícalo. Muestra la información de forma clara y estructurada, incluyendo detalles como el nombre del ciclo, grado, instituto, municipio, provincia y familia profesional si es relevante. Agrupa los datos por instituto y ciclo formativo, si es posible.
 
     Pregunta: {query}
 
@@ -516,27 +516,59 @@ for message in st.session_state.chat_history:
 # Entrada de usuario
 if st.session_state.excel_data is not None and st.session_state.faiss_index is not None:
     # Entrada de voz del usuario (opcional)
-    modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
-    if modo == "Escribir":
-        user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
-        # if texto:
-        #     st.success(f"Consulta: {texto}")
-    else:
-        duration = 5 # segundos
-        if st.button("🎤 Grabar voz"):
-            st.info("Grabando...")
-            fs = 44100
-            try:
-                recording = sd.rec(int(duration * fs), samplerate=fs, channels=1)
-            except sd.PortAudioError as e:
-                print("Audio device error:", e)
-            sd.wait()
-            st.success("Grabación finalizada.")
+    col1, col2 = st.columns([1,12])
+    with col1:
+        # from audio_recorder_streamlit import audio_recorder
+        # audio_bytes = audio_recorder(
+        #     text="",
+        #     recording_color="#e8b62c",
+        #     neutral_color="#6aa36f",
+        #     icon_name="microphone",
+        #     icon_size="2x",
+        #     #energy_threshold=(-1.0, 1.0),
+        #     energy_threshold=1000,  # Ajusta este valor según tu micrófono
+        #     pause_threshold=5.0,
+        # )
 
-            with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-                write(f.name, fs, recording)
+        # # Si se ha grabado audio, procesarlo
+        # if audio_bytes:
+        #     # Guardar el audio en un archivo temporal
+        #     st.audio(audio_bytes, format="audio/wav")
+
+        from streamlit_realtime_audio_recorder import audio_recorder
+        import streamlit as st
+        import base64
+        import io
+
+        result = audio_recorder(
+            interval=50,
+            threshold=-60,
+            silenceTimeout=200
+        )
+
+        if result:
+            if result.get('status') == 'stopped':
+                audio_data = result.get('audioData')
+                if audio_data:
+                    # Decodificar el audio base64 y mostrarlo
+                    st.write("Audio grabado correctamente. Reproduciendo...")
+                    audio_bytes = base64.b64decode(audio_data)
+                    audio_file = io.BytesIO(audio_bytes)
+                    st.audio(audio_file, format="audio/webm")
+                else:
+                    #pass
+                    st.error("No se ha grabado audio. Por favor, intenta de nuevo.")
+            elif result.get('error'):
+                    #st.error(f"Error: {result.get('error')}")
+                    st.error("Error")
+
+            if audio_bytes is not None:
+                # Reconocer el audio y convertirlo a texto
                 recognizer = sr.Recognizer()
-                with sr.AudioFile(f.name) as source:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
+                    temp_audio_file.write(audio_bytes)
+                    temp_audio_file_path = temp_audio_file.name
+                with sr.AudioFile(temp_audio_file_path) as source:
                     audio = recognizer.record(source)
                     try:
                         text = recognizer.recognize_google(audio, language="es-ES")
@@ -544,16 +576,107 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                         user_query = text
                     except sr.UnknownValueError:
                         st.error("No se pudo entender el audio.")
+                        user_query = None
                     except sr.RequestError:
                         st.error("Error al conectarse con el servicio de reconocimiento.")
+                        user_query = None
+            else:
+                st.write("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
+                user_query = None
         else:
+            #st.write("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
             user_query = None
+
+    with col2:
+        user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
+
+    #modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
+    #if modo == "Escribir":
+    #    user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
+        # if texto:
+        #     st.success(f"Consulta: {texto}")
+    #else:
+        #import streamlit as st
+        # from audio_recorder_streamlit import audio_recorder
+
+        # # Usar el grabador de audio para capturar la entrada del usuario
+        # #audio_bytes = audio_recorder()
+        # audio_bytes = audio_recorder(
+        #     text="",
+        #     recording_color="#e8b62c",
+        #     neutral_color="#6aa36f",
+        #     icon_name="microphone",
+        #     icon_size="3x",
+        #     energy_threshold=(-1.0, 1.0),
+        #     pause_threshold=5.0,
+        # )
+        # # Si se ha grabado audio, procesarlo
+        # if audio_bytes:
+        #     # Guardar el audio en un archivo temporal
+        #     st.audio(audio_bytes, format="audio/wav")
+
+        #     # Reconocer el audio y convertirlo a texto
+        #     recognizer = sr.Recognizer()
+        #     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
+        #         temp_audio_file.write(audio_bytes)
+        #         temp_audio_file_path = temp_audio_file.name
+        #     with sr.AudioFile(temp_audio_file_path) as source:
+        #         audio = recognizer.record(source)
+        #         try:
+        #             text = recognizer.recognize_google(audio, language="es-ES")
+        #             st.write("🗣️ Transcripción:", text)
+        #             user_query = text
+        #         except sr.UnknownValueError:
+        #             st.error("No se pudo entender el audio.")
+        #             user_query = None
+        #         except sr.RequestError:
+        #             st.error("Error al conectarse con el servicio de reconocimiento.")
+        #             user_query = None
+        #     # Si no se ha grabado audio, preguntar al usuario si quiere grabar
+        #     # Si quieres usar un botón para grabar audio, puedes descomentar el siguiente código
+        #     # import sounddevice as sd
+        #     # from scipy.io.wavfile import write
+        #     # import tempfile
+        #     # import speech_recognition as sr
+        #     # st.write("Si prefieres, puedes grabar tu voz en lugar de escribir.")
+        # else:
+        #     st.write("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
+        #     user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
+
+        # Si quieres grabar audio desde el micrófono, puedes usar el siguiente código
+        # duration = 5 # segundos
+        # if st.button("🎤 Grabar voz"):
+        #     st.info("Grabando...")
+        #     fs = 44100
+        #     try:
+        #         recording = sd.rec(int(duration * fs), samplerate=fs, channels=1)
+        #     except sd.PortAudioError as e:
+        #         print("Audio device error:", e)
+        #     sd.wait()
+        #     st.success("Grabación finalizada.")
+
+        #     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
+        #         write(f.name, fs, recording)
+        #         recognizer = sr.Recognizer()
+        #         with sr.AudioFile(f.name) as source:
+        #             audio = recognizer.record(source)
+        #             try:
+        #                 text = recognizer.recognize_google(audio, language="es-ES")
+        #                 st.write("🗣️ Transcripción:", text)
+        #                 user_query = text
+        #             except sr.UnknownValueError:
+        #                 st.error("No se pudo entender el audio.")
+        #             except sr.RequestError:
+        #                 st.error("Error al conectarse con el servicio de reconocimiento.")
+        #else:
+        #    user_query = None
 
 
     # Reemplazar términos específicos en la consulta del usuario para mejorar la búsqueda
     #consulta_modificada = consulta_usuario.replace("Ciudad", "Municipio")
     #consulta_modificada = consulta_usuario.replace("Vespertino", "Tarde")
     equivalencias = {"Ciudad": "Municipio",
+                    "Localidad": "Municipio",
                     "Vespertino": "Tarde",
                     "Bilingüe": "Bilingue",
                     "Nuevo": "Nuevo Ciclo",
