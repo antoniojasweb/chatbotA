@@ -516,8 +516,10 @@ for message in st.session_state.chat_history:
 # Entrada de usuario
 if st.session_state.excel_data is not None and st.session_state.faiss_index is not None:
     # Entrada de voz del usuario (opcional)
-    col1, col2 = st.columns([1,12])
-    with col1:
+    modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
+    if modo == "Hablar":
+    #col1, col2 = st.columns([1,12])
+    #with col1:
         # from audio_recorder_streamlit import audio_recorder
         # audio_bytes = audio_recorder(
         #     text="",
@@ -585,7 +587,7 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                         audio = recognizer.record(source)
                         try:
                             text = recognizer.recognize_google(audio, language="es-ES")
-                            #st.write("🗣️ Transcripción:", text)
+                            st.write("🗣️ Transcripción:", text)
                             user_query = text
                         except sr.UnknownValueError:
                             st.error("No se pudo entender el audio.")
@@ -601,7 +603,8 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
             #st.write("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
             user_query = None
 
-    with col2:
+    #with col2:
+    else:
         user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
 
     #modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
