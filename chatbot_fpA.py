@@ -545,11 +545,13 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
         from pydub import AudioSegment
         from pydub.exceptions import CouldntDecodeError
 
-        result = audio_recorder(
-            interval=50,
-            threshold=-60,
-            silenceTimeout=200
-        )
+        col1, col2 = st.columns([1,12])
+        with col1:
+            result = audio_recorder(
+                interval=50,
+                threshold=-60,
+                silenceTimeout=200
+            )
 
         if result:
             if result.get('status') == 'stopped':
@@ -588,7 +590,9 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                         audio = recognizer.record(source)
                         try:
                             text = recognizer.recognize_google(audio, language="es-ES")
-                            st.write("🗣️ Transcripción:", text)
+                            with col2:
+                                # Mostrar la transcripción del audio
+                                st.write("🗣️ Transcripción:", text)
                             user_query = text
                         except sr.UnknownValueError:
                             st.error("No se pudo entender el audio.")
