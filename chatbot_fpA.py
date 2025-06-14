@@ -536,9 +536,11 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
         #     st.audio(audio_bytes, format="audio/wav")
 
         from streamlit_realtime_audio_recorder import audio_recorder
-        import streamlit as st
+        #import streamlit as st
         import base64
         import io
+        from pydub import AudioSegment
+        from pydub.exceptions import CouldntDecodeError
 
         result = audio_recorder(
             interval=50,
