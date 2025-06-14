@@ -542,19 +542,6 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
         from pydub import AudioSegment
         from pydub.exceptions import CouldntDecodeError
 
-        # --- DIAGNÓSTICO DE FFMPEG (Quitar después de verificar) ---
-        import subprocess
-        import sys
-        st.write("Verificando FFmpeg...")
-        try:
-            subprocess.run(["ffmpeg", "-version"], check=True, capture_output=True, text=True)
-            st.success("FFmpeg encontrado y accesible.")
-        except (subprocess.CalledProcessError, FileNotFoundError) as e:
-            st.error(f"¡ERROR CRÍTICO! FFmpeg NO encontrado o no accesible. Por favor, instálalo en tu entorno de despliegue y asegúrate de que esté en el PATH. Detalles: {e}")
-            st.stop() # Detiene la ejecución si FFmpeg no está
-        st.write("Verificación de FFmpeg completada.")
-        # --- FIN DIAGNÓSTICO ---
-
         result = audio_recorder(
             interval=50,
             threshold=-60,
@@ -571,7 +558,7 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                     audio_file = io.BytesIO(audio_bytes)
                     # Mostrar el audio grabado
                     #st.write(audio_file)
-                    st.audio(audio_file, format="audio/webm")
+                    #st.audio(audio_file, format="audio/webm")
                 else:
                     #pass
                     st.error("Repite")
@@ -598,7 +585,7 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                         audio = recognizer.record(source)
                         try:
                             text = recognizer.recognize_google(audio, language="es-ES")
-                            st.write("🗣️ Transcripción:", text)
+                            #st.write("🗣️ Transcripción:", text)
                             user_query = text
                         except sr.UnknownValueError:
                             st.error("No se pudo entender el audio.")
