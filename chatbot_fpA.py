@@ -554,7 +554,7 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                     #st.write("Audio grabado correctamente. Reproduciendo...")
                     audio_bytes = base64.b64decode(audio_data)
                     audio_file = io.BytesIO(audio_bytes)
-                    st.audio(audio_file, format="audio/webm")
+                    st.audio(audio_file, format="audio/wav")
                 else:
                     #pass
                     st.error("Repite")
