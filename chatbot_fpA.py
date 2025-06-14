@@ -820,10 +820,14 @@ if new_pdf:
 
 # Opcional: Botón para limpiar el historial de chat
 if st.sidebar.button("Vaciar Chat"):
-    st.session_state.chat_history = []  # Borra el historial de chat
+    st.session_state.chat_history.clear()  # Borra el historial de chat
+    st.session_state.messages = []  # Borra el historial de mensajes
+    # Si quieres borrar también la variable de consulta del usuario
+    st.session_state.user_query = ''  # Borra la consulta del usuario
+    #st.session_state.chat_history = []  # Borra el historial de chat
     st.write("Historial de chat vacío. 🎉")
     st.success("Chat vaciado. Puedes empezar de nuevo.")
-    st.session_state["user_query"] = ''
+    #st.session_state["user_query"] = ''
 
 
 if st.sidebar.button("Reiniciar Chat"):
