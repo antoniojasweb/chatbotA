@@ -819,12 +819,20 @@ if new_pdf:
 #        st.sidebar.write("No hay mensajes en el historial de chat.")
 
 # Opcional: Botón para limpiar el historial de chat
+if st.sidebar.button("Vaciar Chat"):
+    st.session_state.chat_history = []  # Borra el historial de chat
+    st.write("Historial de chat vacío. 🎉")
+    st.success("Chat vaciado. Puedes empezar de nuevo.")
+    st.session_state["user_query"] = ''
+
+
 if st.sidebar.button("Reiniciar Chat"):
     st.session_state.clear()  # Borra todas las variables de sesión
     #st.session_state.messages = []
     # if not st.session_state.get("messages"):
     #     st.write("Historial de chat vacío. 🎉")
     st.rerun()
+    st.success("Chat reiniciado. Puedes empezar de nuevo.")
 
 # Footer
 st.sidebar.markdown("""
