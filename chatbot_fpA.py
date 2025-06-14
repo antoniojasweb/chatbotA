@@ -570,9 +570,12 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                 temp_audio_file_path = None # Initialize to None
 
                 try:
+                    audio_segment = AudioSegment.from_file(io.BytesIO(audio_bytes), format="webm")
+
                     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
-                        temp_audio_file.write(audio_bytes)
+                        #temp_audio_file.write(audio_bytes)
                         temp_audio_file_path = temp_audio_file.name
+                        audio_segment.export(temp_audio_file_path, format="wav")
 
                     with sr.AudioFile(temp_audio_file_path) as source:
                         # Ajustar el umbral de energía del ruido para el reconocimiento
