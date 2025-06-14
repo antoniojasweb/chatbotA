@@ -555,8 +555,8 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                     audio_bytes = base64.b64decode(audio_data)
                     audio_file = io.BytesIO(audio_bytes)
                     # Mostrar el audio grabado
-                    st.write(audio_file)
-                    #st.audio(audio_file, format="audio/wav")
+                    #st.write(audio_file)
+                    st.audio(audio_file, format="audio/webm")
                 else:
                     #pass
                     st.error("Repite")
@@ -570,12 +570,13 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                 temp_audio_file_path = None # Initialize to None
 
                 try:
-                    # with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
-                    #     temp_audio_file.write(audio_bytes)
-                    #     temp_audio_file_path = temp_audio_file.name
+                    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
+                        temp_audio_file.write(audio_bytes)
+                        temp_audio_file_path = temp_audio_file.name
 
-                    #with sr.AudioFile(temp_audio_file_path) as source:
-                    with sr.AudioFile(audio_file) as source:
+                    with sr.AudioFile(temp_audio_file_path) as source:
+                        # Ajustar el umbral de energía del ruido para el reconocimiento
+                        recognizer.adjust_for_ambient_noise(source)
                         audio = recognizer.record(source)
                         try:
                             text = recognizer.recognize_google(audio, language="es-ES")
