@@ -55,9 +55,10 @@ ModeloEvaluacion = 'all-mpnet-base-v2'  # Modelo para evaluación de respuestas
 # Otros posibles modelos: all-MiniLM-L6-v2, sentence-t5-base, e5-large-v2, etc
 
 
-# --- Configuración de la API de Gemini (Desde Colab, puedes dejar apiKey vacío para que Canvas lo gestione) ---
+# --- Configuración de la API de Gemini ---
 # Si quieres usar modelos diferentes a gemini-2.0-flash o imagen-3.0-generate-002, proporciona una clave API aquí. De lo contrario, déjalo como está.
-API_KEY = ""
+#API_KEY = ""
+API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
 # -------------------------------------------------------------------
 
