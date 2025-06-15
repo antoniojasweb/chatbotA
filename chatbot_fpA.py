@@ -518,22 +518,14 @@ def Lanzar_consulta(user_query):
     """
     Lanza la consulta al modelo RAG y muestra la respuesta.
     """
-    # Entrada de usuario
     if st.session_state.excel_data is not None and st.session_state.faiss_index is not None:
-        # Entrada de voz del usuario (opcional)
-        # modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
-        # if modo == "Hablar":
-        #     user_query = grabar_audio()  # Grabar audio y convertirlo a texto
-        # else:
-        #     user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
-
         # Reemplazar términos específicos en la consulta del usuario para mejorar la búsqueda
         #consulta_modificada = consulta_usuario.replace("Ciudad", "Municipio")
         #consulta_modificada = consulta_usuario.replace("Vespertino", "Tarde")
         equivalencias = {"Ciudad": "Municipio",
                         "Localidad": "Municipio",
                         "Vespertino": "Tarde",
-                        "Bilingüe": "Bilingue",
+                        #"Bilingüe": "Bilingue",
                         "Bilingue": "Bilingüe",
                         "Nuevo": "Nuevo Ciclo",
                         "Ciclo Formativo": "Ciclo",
