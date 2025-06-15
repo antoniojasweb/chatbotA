@@ -497,74 +497,97 @@ if st.session_state.excel_data is None:
 #     with st.chat_message(message["role"]):
 #         st.write(message["content"])
 
+def grabar_audio2():
+    col1, col2 = st.columns([1,12])
+    with col1:
+        result = audio_recorder(
+            interval=50,
+            threshold=-60,
+            silenceTimeout=200
+        )
+
+    if result:
+        if result.get('status') == 'stopped':
+            audio_data = result.get('audioData')
+            if audio_data:
+                # Decodificar el audio base64 y mostrarlo
+                print("Audio grabado correctamente.")
+                audio_bytes = base64.b64decode(audio_data)
+                audio_file = io.BytesIO(audio_bytes)
+                # Mostrar el audio grabado
+                #st.write(audio_file)
+                #st.audio(audio_file, format="audio/webm")
+            else:
+                #pass
+                st.error("Repite")
+        elif result.get('error'):
+                #st.error(f"Error: {result.get('error')}")
+                st.error("Error")
+
+        if audio_bytes is not None:
+            # Reconocer el audio y convertirlo a texto
+            recognizer = sr.Recognizer()
+            temp_audio_file_path = None # Initialize to None
+
+            try:
+                audio_segment = AudioSegment.from_file(audio_file, format="webm")
+
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
+                    #temp_audio_file.write(audio_bytes)
+                    temp_audio_file_path = temp_audio_file.name
+                    audio_segment.export(temp_audio_file_path, format="wav")
+
+                with sr.AudioFile(temp_audio_file_path) as source:
+                    # Ajustar el umbral de energía del ruido para el reconocimiento
+                    recognizer.adjust_for_ambient_noise(source)
+                    audio = recognizer.record(source)
+                    try:
+                        text = recognizer.recognize_google(audio, language="es-ES")
+                        with col2:
+                            # Mostrar la transcripción del audio
+                            st.write("🗣️ Transcripción:", text)
+                        user_query = text
+                    except sr.UnknownValueError:
+                        st.error("No se pudo entender el audio.")
+                        user_query = None
+                    except sr.RequestError as e:
+                        st.error(f"Error al conectarse con el servicio de reconocimiento: {e}")
+                        user_query = None
+            finally:
+                # Clean up the temporary file
+                if temp_audio_file_path and os.path.exists(temp_audio_file_path):
+                    os.remove(temp_audio_file_path)
+    else:
+        print("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
+        user_query = None
+
+
+def grabar_audio():
+    """
+    Graba audio desde el micrófono y lo convierte a texto.
+    """
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        st.write("Grabando...")
+        audio = recognizer.listen(source)
+        st.write("Grabación finalizada.")
+        try:
+            text = recognizer.recognize_google(audio, language='es-ES')
+            st.write(f"Texto reconocido: {text}")
+            return text
+        except sr.UnknownValueError:
+            st.error("No se pudo reconocer el audio.")
+            return None
+        except sr.RequestError as e:
+            st.error(f"Error al conectar con el servicio de reconocimiento de voz: {e}")
+            return None
+
 # Entrada de usuario
 if st.session_state.excel_data is not None and st.session_state.faiss_index is not None:
     # Entrada de voz del usuario (opcional)
     modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
     if modo == "Hablar":
-        col1, col2 = st.columns([1,12])
-        with col1:
-            result = audio_recorder(
-                interval=50,
-                threshold=-60,
-                silenceTimeout=200
-            )
-
-        if result:
-            if result.get('status') == 'stopped':
-                audio_data = result.get('audioData')
-                if audio_data:
-                    # Decodificar el audio base64 y mostrarlo
-                    print("Audio grabado correctamente.")
-                    audio_bytes = base64.b64decode(audio_data)
-                    audio_file = io.BytesIO(audio_bytes)
-                    # Mostrar el audio grabado
-                    #st.write(audio_file)
-                    #st.audio(audio_file, format="audio/webm")
-                else:
-                    #pass
-                    st.error("Repite")
-            elif result.get('error'):
-                    #st.error(f"Error: {result.get('error')}")
-                    st.error("Error")
-
-            if audio_bytes is not None:
-                # Reconocer el audio y convertirlo a texto
-                recognizer = sr.Recognizer()
-                temp_audio_file_path = None # Initialize to None
-
-                try:
-                    audio_segment = AudioSegment.from_file(audio_file, format="webm")
-
-                    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
-                        #temp_audio_file.write(audio_bytes)
-                        temp_audio_file_path = temp_audio_file.name
-                        audio_segment.export(temp_audio_file_path, format="wav")
-
-                    with sr.AudioFile(temp_audio_file_path) as source:
-                        # Ajustar el umbral de energía del ruido para el reconocimiento
-                        recognizer.adjust_for_ambient_noise(source)
-                        audio = recognizer.record(source)
-                        try:
-                            text = recognizer.recognize_google(audio, language="es-ES")
-                            with col2:
-                                # Mostrar la transcripción del audio
-                                st.write("🗣️ Transcripción:", text)
-                            user_query = text
-                        except sr.UnknownValueError:
-                            st.error("No se pudo entender el audio.")
-                            user_query = None
-                        except sr.RequestError as e:
-                            st.error(f"Error al conectarse con el servicio de reconocimiento: {e}")
-                            user_query = None
-                finally:
-                    # Clean up the temporary file
-                    if temp_audio_file_path and os.path.exists(temp_audio_file_path):
-                        os.remove(temp_audio_file_path)
-        else:
-            print("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
-            user_query = None
-
+        user_query = grabar_audio()  # Grabar audio y convertirlo a texto
     else:
         user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
 
