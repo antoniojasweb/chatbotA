@@ -585,11 +585,11 @@ def grabar_audio():
 # Entrada de usuario
 if st.session_state.excel_data is not None and st.session_state.faiss_index is not None:
     # Entrada de voz del usuario (opcional)
-    modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
-    if modo == "Hablar":
-        user_query = grabar_audio()  # Grabar audio y convertirlo a texto
-    else:
-        user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
+    # modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
+    # if modo == "Hablar":
+    #     user_query = grabar_audio()  # Grabar audio y convertirlo a texto
+    # else:
+    #     user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
 
     # Reemplazar términos específicos en la consulta del usuario para mejorar la búsqueda
     #consulta_modificada = consulta_usuario.replace("Ciudad", "Municipio")
@@ -654,6 +654,13 @@ st.sidebar.markdown("""
     \n\n
 """)
 
+# Preguntar al usuario cómo quiere interactuar con el chatbot
+modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
+if modo == "Hablar":
+    user_query = grabar_audio()  # Grabar audio y convertirlo a texto
+else:
+    user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
+
 # Mostrar información del archivo PDF y Excel
 show_datos = st.sidebar.checkbox("¿Mostrar datos utilizados?")
 if show_datos:
@@ -666,16 +673,6 @@ if show_datos:
 
     #if st.session_state.model is not None:
     #    st.sidebar.write(f"- Modelo: `{ModeloEmbeddings}`")
-
-modo2 = st.sidebar.radio("Preguntar por texto o voz:", ("Texto", "Voz"))  # Opción para elegir entre texto o voz
-if modo2 == "Voz":
-    col1, col2 = st.columns([1,12])
-    with col1:
-        result = audio_recorder(
-            interval=50,
-            threshold=-60,
-            silenceTimeout=200
-        )
 
 # new_pdf = st.sidebar.checkbox("¿Cargar nuevo PDF de datos?")
 # if new_pdf:
