@@ -698,7 +698,7 @@ st.sidebar.markdown("""
 """)
 
 # Preguntar al usuario cómo quiere interactuar con el chatbot
-modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
+modo = st.sidebar.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
 if modo == "Hablar":
     user_query = grabar_audio()  # Grabar audio y convertirlo a texto
 else:
