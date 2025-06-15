@@ -289,7 +289,7 @@ def get_gemini_response(prompt: str):
         st.error(f"Ocurrió un error inesperado: {e}")
         return "Lo siento, ocurrió un error inesperado al procesar tu solicitud."
 
-def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, df: pd.DataFrame, top_k: int = None):
+def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, df: pd.DataFrame, top_k: int = 0):
     """
     Realiza la consulta RAG:
     1. Embed de la consulta.
@@ -298,7 +298,7 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     4. Llama al LLM para generar la respuesta.
     """
 
-    if top_k is None:
+    if top_k == 0:
         top_k = len(corpus)
 
     query_embedding = model.encode([query]).astype('float32')
@@ -322,7 +322,7 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     {context}
     ---
 
-    Basándote ÚNICAMENTE en la información proporcionada anteriormente y en tu conocimiento general, responde a la siguiente pregunta de forma concisa y útil. Si la información proporcionada no es suficiente para responder a la pregunta, indícalo. Muestra la información de forma clara y estructurada, incluyendo detalles como el nombre del ciclo, grado, instituto, municipio, provincia y familia profesional si es relevante. Agrupa los datos por instituto y ciclo formativo, si es posible.
+    Basándote ÚNICAMENTE en la información proporcionada anteriormente y en tu conocimiento general, responde a la siguiente pregunta de forma concisa y útil. Si la información proporcionada no es suficiente para responder a la pregunta, indícalo. Muestra la información de forma clara y estructurada por instituto y cliclo formativo, incluyendo detalles como el nombre del ciclo, grado, instituto, municipio, provincia y familia profesional si es relevante.
 
     Pregunta: {query}
 
@@ -458,10 +458,10 @@ if "excel_data" not in st.session_state:
     st.session_state.excel_data = None
 if "faiss_index" not in st.session_state:
     st.session_state.faiss_index = None
-if "corpus" not in st.session_state:
-    st.session_state.corpus = None
 if "model" not in st.session_state:
     st.session_state.model = None
+if "corpus" not in st.session_state:
+    st.session_state.corpus = None
 
 # Cargar el modelo de embeddings solo una vez
 if st.session_state.model is None:
@@ -644,22 +644,32 @@ if show_datos:
     #if st.session_state.model is not None:
     #    st.sidebar.write(f"- Modelo: `{ModeloEmbeddings}`")
 
-new_pdf = st.sidebar.checkbox("¿Cargar nuevo PDF de datos?")
-if new_pdf:
-    # Cargar PDF
-    pdf_obj = st.sidebar.file_uploader("Carga el documento PDF fuente", type="pdf")
-    # Si se carga un PDF, procesarlo
-    if pdf_obj is not None:
-        # Guardar el PDF en un archivo temporal
-        with open(FilePDF, "wb") as f:
-            f.write(pdf_obj.getbuffer())
-        # Extraer información del PDF y crear el DataFrame
-        df = extraer_informacion_pdf(FilePDF)
-        st.session_state.excel_data = df
-        st.session_state.faiss_index, st.session_state.corpus = create_faiss_index(df, st.session_state.model)
-        st.success("¡Datos cargados, embeddings e índice FAISS creados correctamente! Ahora puedes hacer preguntas.")
-        # Limpiar historial de chat al cargar un nuevo archivo
-        st.session_state.chat_history = []
+st.sidebar.radio("Preguntar por texto o voz:", ("Texto", "Voz"))  # Opción para elegir entre texto o voz
+if modo == "Voz":
+    col1, col2 = st.columns([1,12])
+    with col1:
+        result = audio_recorder(
+            interval=50,
+            threshold=-60,
+            silenceTimeout=200
+        )
+
+# new_pdf = st.sidebar.checkbox("¿Cargar nuevo PDF de datos?")
+# if new_pdf:
+#     # Cargar PDF
+#     pdf_obj = st.sidebar.file_uploader("Carga el documento PDF fuente", type="pdf")
+#     # Si se carga un PDF, procesarlo
+#     if pdf_obj is not None:
+#         # Guardar el PDF en un archivo temporal
+#         with open(FilePDF, "wb") as f:
+#             f.write(pdf_obj.getbuffer())
+#         # Extraer información del PDF y crear el DataFrame
+#         df = extraer_informacion_pdf(FilePDF)
+#         st.session_state.excel_data = df
+#         st.session_state.faiss_index, st.session_state.corpus = create_faiss_index(df, st.session_state.model)
+#         st.success("¡Datos cargados, embeddings e índice FAISS creados correctamente! Ahora puedes hacer preguntas.")
+#         # Limpiar historial de chat al cargar un nuevo archivo
+#         st.session_state.chat_history = []
 
 # Mostrar el DataFrame cargado desde el PDF
 # if st.session_state.excel_data is not None:
@@ -687,6 +697,8 @@ if st.sidebar.button("Vaciar Chat"):
 
 if st.sidebar.button("Reiniciar Chat"):
     st.session_state.clear()  # Borra todas las variables de sesión
+    st.empty()  # Limpia la pantalla de chat
+    st.session_state.chat_history = []  # Reiniciar el historial de chat
     st.rerun()
     st.success("Chat reiniciado. Puedes empezar de nuevo.")
 
