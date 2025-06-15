@@ -12,7 +12,7 @@ import pandas as pd
 import numpy as np
 import os
 import requests
-import time
+#import time
 
 import streamlit as st
 from sentence_transformers import SentenceTransformer
@@ -422,7 +422,7 @@ def text_to_audio_base64(text, lang='es'):
         print(f"Error al generar audio: {e}")
         return None
 
-def grabar_audio2():
+def grabar_audio():
     #st.write("Puedes grabar tu pregunta usando el micrófono.")
     st.write("La grabación se inicia al pulsar el botón del micrófono, y finaliza al volver a pulsar el botón.")
     col1, col2 = st.columns([1,12])
@@ -491,53 +491,28 @@ def grabar_audio2():
 
     return user_query
 
-
-def grabar_audio():
-    """
-    Graba audio desde el micrófono y lo convierte a texto.
-    """
-    recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.write("Grabando...")
-        audio = recognizer.listen(source)
-        st.write("Grabación finalizada.")
-        try:
-            text = recognizer.recognize_google(audio, language='es-ES')
-            with col2:
-                # Mostrar la transcripción del audio
-                st.write("🗣️ ==> ", text)
-            #st.write(f"Texto reconocido: {text}")
-            return text
-        except sr.UnknownValueError:
-            st.error("No se pudo reconocer el audio.")
-            return None
-        except sr.RequestError as e:
-            st.error(f"Error al conectar con el servicio de reconocimiento de voz: {e}")
-            return None
-
-def Lanzar_pregunta(user_query):
-    """
-    Lanza la pregunta al modelo RAG y muestra la respuesta.
-    """
-    if user_query:
-        # Mostrar mensaje de búsqueda
-        st.write(f"Buscando información relacionada con: {user_query}")
-        # Llamar al modelo RAG para obtener la respuesta
-        respuesta = ask_rag_model(user_query, st.session_state.faiss_index, st.session_state.corpus, st.session_state.model, st.session_state.excel_data)
-        # Mostrar la respuesta generada
-        with st.chat_message("assistant"):
-            st.write(respuesta)
-            # Convertir la respuesta a audio y mostrarla
-            audio_base64 = text_to_audio_base64(respuesta)
-            if audio_base64:
-                audio_html = f'<audio controls><source src="data:audio/mp3;base64,{audio_base64}" type="audio/mpeg"></audio>'
-                st.markdown(audio_html, unsafe_allow_html=True)
-            else:
-                st.error("No se pudo generar el audio de la respuesta.")
-        # Añadir al historial de chat
-        st.session_state.chat_history.append({"role": "assistant", "content": respuesta})
-    else:
-        st.warning("Por favor, escribe o graba una pregunta antes de enviar.")
+# def grabar_audio2():
+#     """
+#     Graba audio desde el micrófono y lo convierte a texto.
+#     """
+#     recognizer = sr.Recognizer()
+#     with sr.Microphone() as source:
+#         st.write("Grabando...")
+#         audio = recognizer.listen(source)
+#         st.write("Grabación finalizada.")
+#         try:
+#             text = recognizer.recognize_google(audio, language='es-ES')
+#             with col2:
+#                 # Mostrar la transcripción del audio
+#                 st.write("🗣️ ==> ", text)
+#             #st.write(f"Texto reconocido: {text}")
+#             return text
+#         except sr.UnknownValueError:
+#             st.error("No se pudo reconocer el audio.")
+#             return None
+#         except sr.RequestError as e:
+#             st.error(f"Error al conectar con el servicio de reconocimiento de voz: {e}")
+#             return None
 
 def Lanzar_consulta(user_query):
     """
