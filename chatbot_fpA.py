@@ -673,9 +673,9 @@ if st.session_state.excel_data is None:
 #     with st.chat_message(message["role"]):
 #         st.write(message["content"])
 
-user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
-if user_query:
-    Lanzar_consulta(user_query)
+# user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
+# if user_query:
+#     Lanzar_consulta(user_query)
 
 # -------------------------------------------------------------------
 
