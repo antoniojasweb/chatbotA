@@ -692,6 +692,8 @@ if modo2 == "Voz":
 
 # Opcional: Botón para limpiar el historial de chat
 if st.sidebar.button("Vaciar Chat"):
+    st.session_state.chat_history = []  # Reiniciar el historial de chat
+    st.session_state.messages = []  # Reiniciar los mensajes
     st.empty()  # Limpia la pantalla de chat
     st.success("Chat vaciado. Puedes empezar de nuevo.")
 
