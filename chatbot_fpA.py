@@ -473,7 +473,7 @@ def grabar_audio():
                         text = recognizer.recognize_google(audio, language="es-ES")
                         with col2:
                             # Mostrar la transcripción del audio
-                            st.write("🗣️ ==> ", text)
+                            st.write("🗣️ ", text)
                         user_query = text
                     except sr.UnknownValueError:
                         st.error("No se pudo entender el audio.")
