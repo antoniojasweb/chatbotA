@@ -485,6 +485,8 @@ def grabar_audio2():
         print("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
         user_query = None
 
+    return user_query
+
 
 def grabar_audio():
     """
