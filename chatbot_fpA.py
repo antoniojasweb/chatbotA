@@ -12,6 +12,7 @@ import pandas as pd
 import numpy as np
 import os
 import requests
+import time
 
 import streamlit as st
 from sentence_transformers import SentenceTransformer
@@ -422,13 +423,25 @@ def text_to_audio_base64(text, lang='es'):
         return None
 
 def grabar_audio2():
+    st.write("Puedes grabar tu pregunta usando el micrófono.")
+    st.write("Pulsa el botón de grabación para empezar a grabar tu pregunta.")
+    st.write("La grabación se detendrá automáticamente después de 5 segundos o si vuelves a pulsar el botón.")
+
     col1, col2 = st.columns([1,12])
     with col1:
+        # Duración máxima en segundos
+        MAX_DURACION = 5  # Duración máxima de grabación en segundos
+        start_time = time.time()
         result = audio_recorder(
             interval=50,
             threshold=-60,
-            silenceTimeout=200
+            silenceTimeout=200,
+            start_text="Pulsa para grabar",
+            stop_text="Pulsa para detener",
         )
+        # Verificar si se ha alcanzado el tiempo límite
+        if result and (time.time() - start_time > MAX_DURACION):
+            st.warning("Tiempo máximo de grabación alcanzado. Grabación detenida automáticamente.")
 
     if result:
         if result.get('status') == 'stopped':
@@ -678,6 +691,7 @@ if st.session_state.excel_data is None:
 # Preguntar al usuario cómo quiere interactuar con el chatbot
 modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
 if modo == "Hablar":
+    st.write("Puedes grabar tu pregunta usando el micrófono.")
     user_query = grabar_audio2()  # Grabar audio y convertirlo a texto
 else:
     user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
