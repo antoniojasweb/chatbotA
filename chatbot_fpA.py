@@ -493,9 +493,9 @@ if st.session_state.excel_data is None:
         st.session_state.corpus = None
 
 # Mostrar historial de chat
-for message in st.session_state.chat_history:
-    with st.chat_message(message["role"]):
-        st.write(message["content"])
+# for message in st.session_state.chat_history:
+#     with st.chat_message(message["role"]):
+#         st.write(message["content"])
 
 # Entrada de usuario
 if st.session_state.excel_data is not None and st.session_state.faiss_index is not None:
@@ -644,8 +644,8 @@ if show_datos:
     #if st.session_state.model is not None:
     #    st.sidebar.write(f"- Modelo: `{ModeloEmbeddings}`")
 
-st.sidebar.radio("Preguntar por texto o voz:", ("Texto", "Voz"))  # Opción para elegir entre texto o voz
-if modo == "Voz":
+modo2 = st.sidebar.radio("Preguntar por texto o voz:", ("Texto", "Voz"))  # Opción para elegir entre texto o voz
+if modo2 == "Voz":
     col1, col2 = st.columns([1,12])
     with col1:
         result = audio_recorder(
