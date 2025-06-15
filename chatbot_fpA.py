@@ -424,21 +424,15 @@ def text_to_audio_base64(text, lang='es'):
 
 def grabar_audio2():
     #st.write("Puedes grabar tu pregunta usando el micrófono.")
-    st.write("La grabación se inicia al pulsar el botón del micrófono, y finaliza al volver a pulsar el botón o automáticamente después de 5 segundos.")
-
+    st.write("La grabación se inicia al pulsar el botón del micrófono, y finaliza al volver a pulsar el botón.")
     col1, col2 = st.columns([1,12])
     with col1:
-        # Duración máxima en segundos
-        MAX_DURACION = 5  # Duración máxima de grabación en segundos
-        start_time = time.time()
+        # Usar el componente de grabación de audio
         result = audio_recorder(
             interval=50,
             threshold=-60,
             silenceTimeout=200,
         )
-        # Verificar si se ha alcanzado el tiempo límite
-        if result and (time.time() - start_time > MAX_DURACION):
-            st.warning("Tiempo máximo de grabación alcanzado. Grabación detenida automáticamente.")
 
     if result:
         if result.get('status') == 'stopped':
