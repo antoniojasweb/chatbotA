@@ -673,12 +673,15 @@ if st.session_state.excel_data is None:
 #     with st.chat_message(message["role"]):
 #         st.write(message["content"])
 
-# user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
-# if user_query:
-#     Lanzar_consulta(user_query)
+# Preguntar al usuario cómo quiere interactuar con el chatbot
+modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
+if modo == "Hablar":
+    user_query = grabar_audio2()  # Grabar audio y convertirlo a texto
+else:
+    user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
+Lanzar_consulta(user_query)
 
 # -------------------------------------------------------------------
-
 
 # --- Configuración de la BARRA LATERAL: sidebar ---
 #st.image(image, caption='Chatbot de Ciclos Formativos', use_column_width=True)
@@ -696,14 +699,6 @@ st.sidebar.markdown("""
     - Y mucho más relacionado con la oferta formativa en Extremadura.
     \n\n
 """)
-
-# Preguntar al usuario cómo quiere interactuar con el chatbot
-modo = st.sidebar.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
-if modo == "Hablar":
-    user_query = grabar_audio2()  # Grabar audio y convertirlo a texto
-else:
-    user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
-Lanzar_consulta(user_query)
 
 # Mostrar información del archivo PDF y Excel
 show_datos = st.sidebar.checkbox("¿Mostrar datos utilizados?")
