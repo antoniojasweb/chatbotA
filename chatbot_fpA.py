@@ -423,9 +423,8 @@ def text_to_audio_base64(text, lang='es'):
         return None
 
 def grabar_audio2():
-    st.write("Puedes grabar tu pregunta usando el micrófono.")
-    st.write("Pulsa el botón de grabación para empezar a grabar tu pregunta.")
-    st.write("La grabación se detendrá automáticamente después de 5 segundos o si vuelves a pulsar el botón.")
+    #st.write("Puedes grabar tu pregunta usando el micrófono.")
+    st.write("La grabación se inicia al pulsar el botón del micrófono, y finaliza al volver a pulsar el botón o automáticamente después de 5 segundos.")
 
     col1, col2 = st.columns([1,12])
     with col1:
@@ -436,8 +435,6 @@ def grabar_audio2():
             interval=50,
             threshold=-60,
             silenceTimeout=200,
-            start_text="Pulsa para grabar",
-            stop_text="Pulsa para detener",
         )
         # Verificar si se ha alcanzado el tiempo límite
         if result and (time.time() - start_time > MAX_DURACION):
@@ -691,7 +688,6 @@ if st.session_state.excel_data is None:
 # Preguntar al usuario cómo quiere interactuar con el chatbot
 modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
 if modo == "Hablar":
-    st.write("Puedes grabar tu pregunta usando el micrófono.")
     user_query = grabar_audio2()  # Grabar audio y convertirlo a texto
 else:
     user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
