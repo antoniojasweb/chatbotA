@@ -421,6 +421,177 @@ def text_to_audio_base64(text, lang='es'):
         print(f"Error al generar audio: {e}")
         return None
 
+def grabar_audio2():
+    col1, col2 = st.columns([1,12])
+    with col1:
+        result = audio_recorder(
+            interval=50,
+            threshold=-60,
+            silenceTimeout=200
+        )
+
+    if result:
+        if result.get('status') == 'stopped':
+            audio_data = result.get('audioData')
+            if audio_data:
+                # Decodificar el audio base64 y mostrarlo
+                print("Audio grabado correctamente.")
+                audio_bytes = base64.b64decode(audio_data)
+                audio_file = io.BytesIO(audio_bytes)
+                # Mostrar el audio grabado
+                #st.write(audio_file)
+                #st.audio(audio_file, format="audio/webm")
+            else:
+                #pass
+                st.error("Repite")
+        elif result.get('error'):
+                #st.error(f"Error: {result.get('error')}")
+                st.error("Error")
+
+        if audio_bytes is not None:
+            # Reconocer el audio y convertirlo a texto
+            recognizer = sr.Recognizer()
+            temp_audio_file_path = None # Initialize to None
+
+            try:
+                audio_segment = AudioSegment.from_file(audio_file, format="webm")
+
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
+                    #temp_audio_file.write(audio_bytes)
+                    temp_audio_file_path = temp_audio_file.name
+                    audio_segment.export(temp_audio_file_path, format="wav")
+
+                with sr.AudioFile(temp_audio_file_path) as source:
+                    # Ajustar el umbral de energía del ruido para el reconocimiento
+                    recognizer.adjust_for_ambient_noise(source)
+                    audio = recognizer.record(source)
+                    try:
+                        text = recognizer.recognize_google(audio, language="es-ES")
+                        with col2:
+                            # Mostrar la transcripción del audio
+                            st.write("🗣️ Transcripción:", text)
+                        user_query = text
+                    except sr.UnknownValueError:
+                        st.error("No se pudo entender el audio.")
+                        user_query = None
+                    except sr.RequestError as e:
+                        st.error(f"Error al conectarse con el servicio de reconocimiento: {e}")
+                        user_query = None
+            finally:
+                # Clean up the temporary file
+                if temp_audio_file_path and os.path.exists(temp_audio_file_path):
+                    os.remove(temp_audio_file_path)
+    else:
+        print("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
+        user_query = None
+
+
+def grabar_audio():
+    """
+    Graba audio desde el micrófono y lo convierte a texto.
+    """
+    recognizer = sr.Recognizer()
+    with sr.Microphone() as source:
+        st.write("Grabando...")
+        audio = recognizer.listen(source)
+        st.write("Grabación finalizada.")
+        try:
+            text = recognizer.recognize_google(audio, language='es-ES')
+            with col2:
+                # Mostrar la transcripción del audio
+                st.write("🗣️ ==> ", text)
+            #st.write(f"Texto reconocido: {text}")
+            return text
+        except sr.UnknownValueError:
+            st.error("No se pudo reconocer el audio.")
+            return None
+        except sr.RequestError as e:
+            st.error(f"Error al conectar con el servicio de reconocimiento de voz: {e}")
+            return None
+
+def Lanzar_pregunta(user_query):
+    """
+    Lanza la pregunta al modelo RAG y muestra la respuesta.
+    """
+    if user_query:
+        # Mostrar mensaje de búsqueda
+        st.write(f"Buscando información relacionada con: {user_query}")
+        # Llamar al modelo RAG para obtener la respuesta
+        respuesta = ask_rag_model(user_query, st.session_state.faiss_index, st.session_state.corpus, st.session_state.model, st.session_state.excel_data)
+        # Mostrar la respuesta generada
+        with st.chat_message("assistant"):
+            st.write(respuesta)
+            # Convertir la respuesta a audio y mostrarla
+            audio_base64 = text_to_audio_base64(respuesta)
+            if audio_base64:
+                audio_html = f'<audio controls><source src="data:audio/mp3;base64,{audio_base64}" type="audio/mpeg"></audio>'
+                st.markdown(audio_html, unsafe_allow_html=True)
+            else:
+                st.error("No se pudo generar el audio de la respuesta.")
+        # Añadir al historial de chat
+        st.session_state.chat_history.append({"role": "assistant", "content": respuesta})
+    else:
+        st.warning("Por favor, escribe o graba una pregunta antes de enviar.")
+
+def Lanzar_consulta(user_query):
+    """
+    Lanza la consulta al modelo RAG y muestra la respuesta.
+    """
+    # Entrada de usuario
+    if st.session_state.excel_data is not None and st.session_state.faiss_index is not None:
+        # Entrada de voz del usuario (opcional)
+        # modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
+        # if modo == "Hablar":
+        #     user_query = grabar_audio()  # Grabar audio y convertirlo a texto
+        # else:
+        #     user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
+
+        # Reemplazar términos específicos en la consulta del usuario para mejorar la búsqueda
+        #consulta_modificada = consulta_usuario.replace("Ciudad", "Municipio")
+        #consulta_modificada = consulta_usuario.replace("Vespertino", "Tarde")
+        equivalencias = {"Ciudad": "Municipio",
+                        "Localidad": "Municipio",
+                        "Vespertino": "Tarde",
+                        "Bilingüe": "Bilingue",
+                        "Bilingue": "Bilingüe",
+                        "Nuevo": "Nuevo Ciclo",
+                        "Ciclo Formativo": "Ciclo",
+                        "Instituto": "Centro Educativo"}
+
+        if user_query:
+            # Reemplazar términos en la consulta del usuario
+            user_query = user_query.strip()  # Limpiar espacios al inicio y final
+            user_query = user_query.replace("?", "")  # Eliminar signos de interrogación
+            user_query = user_query.replace("¿", "")  # Eliminar signos de interrogación al inicio
+            user_query = user_query.replace(".", "")  # Eliminar puntos al final
+            user_query = user_query.replace(",", "")  # Eliminar comas al final
+            user_query = user_query.replace(":", "")  # Eliminar dos puntos al final
+            user_query = user_query.replace(";", "")  # Eliminar punto y coma al final
+            user_query = user_query.replace("  ", " ")  # Eliminar dobles espacios
+
+            # Reemplazar equivalencias en la consulta del usuario
+            for clave, valor in equivalencias.items():
+                user_query = user_query.replace(clave, valor)
+
+            with st.spinner("Pensando...", show_time=True):
+                response = ask_rag_model(
+                    user_query,
+                    st.session_state.faiss_index,
+                    st.session_state.corpus,
+                    st.session_state.model,
+                    st.session_state.excel_data
+                )
+
+            with st.chat_message("assistant"):
+                st.write(response)
+                # Convertir respuesta del bot a audio base64
+                audio_b64 = text_to_audio_base64(response, lang='es')
+                if audio_b64:
+                    st.audio(f"data:audio/mp3;base64,{audio_b64}", format="audio/mp3")
+
+            # Añadir la respuesta al historial de chat
+            st.session_state.chat_history.append({"role": "assistant", "content": response})
+
 # -------------------------------------------------------------------
 # --- Comprobación de existencia de archivos y carga de datos ---
 # Comprobar si el archivo PDF existe, si no, descargarlo
@@ -502,145 +673,12 @@ if st.session_state.excel_data is None:
 #     with st.chat_message(message["role"]):
 #         st.write(message["content"])
 
-def grabar_audio2():
-    col1, col2 = st.columns([1,12])
-    with col1:
-        result = audio_recorder(
-            interval=50,
-            threshold=-60,
-            silenceTimeout=200
-        )
+user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
+if user_query:
+    Lanzar_consulta(user_query)
 
-    if result:
-        if result.get('status') == 'stopped':
-            audio_data = result.get('audioData')
-            if audio_data:
-                # Decodificar el audio base64 y mostrarlo
-                print("Audio grabado correctamente.")
-                audio_bytes = base64.b64decode(audio_data)
-                audio_file = io.BytesIO(audio_bytes)
-                # Mostrar el audio grabado
-                #st.write(audio_file)
-                #st.audio(audio_file, format="audio/webm")
-            else:
-                #pass
-                st.error("Repite")
-        elif result.get('error'):
-                #st.error(f"Error: {result.get('error')}")
-                st.error("Error")
+# -------------------------------------------------------------------
 
-        if audio_bytes is not None:
-            # Reconocer el audio y convertirlo a texto
-            recognizer = sr.Recognizer()
-            temp_audio_file_path = None # Initialize to None
-
-            try:
-                audio_segment = AudioSegment.from_file(audio_file, format="webm")
-
-                with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
-                    #temp_audio_file.write(audio_bytes)
-                    temp_audio_file_path = temp_audio_file.name
-                    audio_segment.export(temp_audio_file_path, format="wav")
-
-                with sr.AudioFile(temp_audio_file_path) as source:
-                    # Ajustar el umbral de energía del ruido para el reconocimiento
-                    recognizer.adjust_for_ambient_noise(source)
-                    audio = recognizer.record(source)
-                    try:
-                        text = recognizer.recognize_google(audio, language="es-ES")
-                        with col2:
-                            # Mostrar la transcripción del audio
-                            st.write("🗣️ Transcripción:", text)
-                        user_query = text
-                    except sr.UnknownValueError:
-                        st.error("No se pudo entender el audio.")
-                        user_query = None
-                    except sr.RequestError as e:
-                        st.error(f"Error al conectarse con el servicio de reconocimiento: {e}")
-                        user_query = None
-            finally:
-                # Clean up the temporary file
-                if temp_audio_file_path and os.path.exists(temp_audio_file_path):
-                    os.remove(temp_audio_file_path)
-    else:
-        print("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
-        user_query = None
-
-
-def grabar_audio():
-    """
-    Graba audio desde el micrófono y lo convierte a texto.
-    """
-    recognizer = sr.Recognizer()
-    with sr.Microphone() as source:
-        st.write("Grabando...")
-        audio = recognizer.listen(source)
-        st.write("Grabación finalizada.")
-        try:
-            text = recognizer.recognize_google(audio, language='es-ES')
-            st.write(f"Texto reconocido: {text}")
-            return text
-        except sr.UnknownValueError:
-            st.error("No se pudo reconocer el audio.")
-            return None
-        except sr.RequestError as e:
-            st.error(f"Error al conectar con el servicio de reconocimiento de voz: {e}")
-            return None
-
-# Entrada de usuario
-if st.session_state.excel_data is not None and st.session_state.faiss_index is not None:
-    # Entrada de voz del usuario (opcional)
-    # modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
-    # if modo == "Hablar":
-    #     user_query = grabar_audio()  # Grabar audio y convertirlo a texto
-    # else:
-    #     user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
-
-    # Reemplazar términos específicos en la consulta del usuario para mejorar la búsqueda
-    #consulta_modificada = consulta_usuario.replace("Ciudad", "Municipio")
-    #consulta_modificada = consulta_usuario.replace("Vespertino", "Tarde")
-    equivalencias = {"Ciudad": "Municipio",
-                    "Localidad": "Municipio",
-                    "Vespertino": "Tarde",
-                    "Bilingüe": "Bilingue",
-                    "Bilingue": "Bilingüe",
-                    "Nuevo": "Nuevo Ciclo",
-                    "Ciclo Formativo": "Ciclo",
-                    "Instituto": "Centro Educativo"}
-
-    if user_query:
-        # Reemplazar términos en la consulta del usuario
-        user_query = user_query.strip()  # Limpiar espacios al inicio y final
-        user_query = user_query.replace("?", "")  # Eliminar signos de interrogación
-        user_query = user_query.replace("¿", "")  # Eliminar signos de interrogación al inicio
-        user_query = user_query.replace(".", "")  # Eliminar puntos al final
-        user_query = user_query.replace(",", "")  # Eliminar comas al final
-        user_query = user_query.replace(":", "")  # Eliminar dos puntos al final
-        user_query = user_query.replace(";", "")  # Eliminar punto y coma al final
-        user_query = user_query.replace("  ", " ")  # Eliminar dobles espacios
-
-        # Reemplazar equivalencias en la consulta del usuario
-        for clave, valor in equivalencias.items():
-            user_query = user_query.replace(clave, valor)
-
-        with st.spinner("Pensando...", show_time=True):
-            response = ask_rag_model(
-                user_query,
-                st.session_state.faiss_index,
-                st.session_state.corpus,
-                st.session_state.model,
-                st.session_state.excel_data
-            )
-
-        with st.chat_message("assistant"):
-            st.write(response)
-            # Convertir respuesta del bot a audio base64
-            audio_b64 = text_to_audio_base64(response, lang='es')
-            if audio_b64:
-                st.audio(f"data:audio/mp3;base64,{audio_b64}", format="audio/mp3")
-
-        # Añadir la respuesta al historial de chat
-        st.session_state.chat_history.append({"role": "assistant", "content": response})
 
 # --- Configuración de la BARRA LATERAL: sidebar ---
 #st.image(image, caption='Chatbot de Ciclos Formativos', use_column_width=True)
@@ -665,6 +703,7 @@ if modo == "Hablar":
     user_query = grabar_audio()  # Grabar audio y convertirlo a texto
 else:
     user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
+Lanzar_consulta(user_query)
 
 # Mostrar información del archivo PDF y Excel
 show_datos = st.sidebar.checkbox("¿Mostrar datos utilizados?")
