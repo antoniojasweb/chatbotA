@@ -9,36 +9,30 @@
 # -------------------------------------------------------------------
 import fitz  # PyMuPDF
 import pandas as pd
+import numpy as np
 import os
 import requests
 
 import streamlit as st
 from sentence_transformers import SentenceTransformer
 import faiss
-import numpy as np
 import json
 from PIL import Image
 from sklearn.preprocessing import normalize
 from sklearn.preprocessing import StandardScaler
 
 # Para la conversión de texto a voz
-# pip install gtts
 from gtts import gTTS
 import io  # Necesario para manejar el buffer de audio
 import base64 # Necesario para incrustar audio directamente en HTML
 
-# import openai  # Para la API de OpenAI
-# from streamlit_audiorec import st_audiorec  # Para grabar audio desde el micrófono
-# from io import BytesIO  # Para manejar archivos en memoria
-# from audio_recorder_streamlit import audio_recorder
-# import tempfile
-
-
-#import sounddevice as sd
+# Para grabar audio desde el micrófono
 from scipy.io.wavfile import write
 import speech_recognition as sr
 import tempfile
-
+from streamlit_realtime_audio_recorder import audio_recorder
+from pydub import AudioSegment
+from pydub.exceptions import CouldntDecodeError
 # -------------------------------------------------------------------
 
 # -------------------------------------------------------------------
@@ -54,10 +48,9 @@ ModeloEmbeddings = 'paraphrase-multilingual-MiniLM-L12-v2'
 ModeloEvaluacion = 'all-mpnet-base-v2'  # Modelo para evaluación de respuestas
 # Otros posibles modelos: all-MiniLM-L6-v2, sentence-t5-base, e5-large-v2, etc
 
-
 # --- Configuración de la API de Gemini ---
-# Si quieres usar modelos diferentes a gemini-2.0-flash o imagen-3.0-generate-002, proporciona una clave API aquí. De lo contrario, déjalo como está.
-#API_KEY = ""
+# Otro modelo posible: imagen-3.0-generate-002
+Model_Gemini = "gemini-2.0-flash"
 API_KEY = os.getenv("GEMINI_API_KEY")
 GEMINI_API_URL = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={API_KEY}"
 # -------------------------------------------------------------------
@@ -81,9 +74,9 @@ def descargar_logo(fichero_logo):
             # Abrimos el archivo en modo de lectura binaria
             with open(FileLogo, 'wb') as file:
                 file.write(response.content)
-            #print("Logo descargado y guardado localmente.")
-        #else:
-            #print(f"Error al descargar el logo: {response.status_code}")
+            print("Logo descargado: " + fichero_logo)
+        else:
+            print(f"Error al descargar el logo: {response.status_code}")
 
 # Descargar fichero PDF desde URL
 def descargar_pdf(fichero_pdf):
@@ -95,9 +88,9 @@ def descargar_pdf(fichero_pdf):
             # Abrimos el archivo PDF en modo de lectura binaria
             with open(FilePDF, 'wb') as file:
                 file.write(response.content)
-            #print("Archivo descargado y guardado localmente.")
-        #else:
-            #print(f"Error al descargar el archivo: {response.status_code}")
+            print("Fichero PDF: " + fichero_pdf + " descargado.")
+        else:
+            print(f"Error al descargar el PDF: {response.status_code}")
 
 # Extraer información del PDF y guardarla en un DataFrame
 def extraer_informacion_pdf(fichero_pdf):
@@ -106,7 +99,7 @@ def extraer_informacion_pdf(fichero_pdf):
         os.remove(FileExcel)
 
     # Abrir el PDF
-    print("Fichero PDF procesado: " + fichero_pdf)
+    #print("Fichero PDF procesado: " + fichero_pdf)
     doc = fitz.open(fichero_pdf)
 
     # Inicializar una lista para almacenar los datos
@@ -166,28 +159,6 @@ def extraer_informacion_pdf(fichero_pdf):
                             elif "2ºC" in text:
                                 curso = "2ºC"
 
-                            #print(text,curso)
-
-                            # Extras
-                            # curso = curso_raw
-                            # bilingue = "No"
-                            # nuevo = "No"
-
-                            # if "Vespertino" in curso:
-                            #     turno = "Vespertino"
-                            # if "Bilingüe" in curso or "Bilingue" in curso:
-                            #     bilingue = "Sí"
-                            # if "Nuevo" in curso:
-                            #     nuevo = "Sí"
-
-                            # Limpiar texto del campo curso
-                            # curso = (curso
-                            #         .replace("Vespertino", "")
-                            #         .replace("Diurno", "")
-                            #         .replace("Nuevo", "")
-                            #         .replace("Bilingüe: IN", "")
-                            #         .strip())
-
                         except ValueError:
                             continue  # línea malformada
 
@@ -217,15 +188,25 @@ def extraer_informacion_pdf(fichero_pdf):
                                 "Nuevo": nuevo
                             })
 
-    # Convertir a DataFrame
-    df = pd.DataFrame(data)
+    if data:
+        # Convertir a DataFrame
+        df = pd.DataFrame(data)
 
-    # ordenar por la columna Municipio y Código Ciclom, en orden ascendente
-    df.sort_values(['Familia Profesional','Código Ciclo'], ascending=[True, True], inplace=True)
+        # ordenar por la columna Municipio y Código Ciclom, en orden ascendente
+        df.sort_values(['Familia Profesional','Código Ciclo'], ascending=[True, True], inplace=True)
 
-    # Exportar a Excel
-    df.to_excel(FileExcel, index=False)
-    print("Fichero Excel creado : " + FileExcel)
+        # Exportar a Excel
+        df.to_excel(FileExcel, index=False)
+        print("Fichero Excel creado : " + FileExcel)
+    else:
+        print("No se encontraron datos válidos en el PDF.")
+        df = pd.DataFrame(columns=[
+            "Familia Profesional", "Código Ciclo", "Nombre Ciclo", "Grado",
+            "Instituto", "Municipio", "Provincia", "Turno", "Bilingüe", "Nuevo"
+        ])
+
+    # Si quieres mostrar el DataFrame en Streamlit, puedes descomentar la siguiente línea
+    #st.write(df)
 
     # Mostrar primeras filas
     #print(df.head())
@@ -242,14 +223,14 @@ def load_embedding_model():
     """
     #st.write("Cargando modelo de embeddings (esto puede tardar unos segundos)...")
     model = SentenceTransformer(ModeloEmbeddings)
-    #st.write("Modelo de embeddings cargado.")
+    print("Modelo de embeddings cargado: " + ModeloEmbeddings)
     return model
 
 def create_faiss_index(df: pd.DataFrame, model: SentenceTransformer):
     """
     Crea un índice FAISS a partir de los datos del DataFrame.
     """
-    #st.write("Creando embeddings e índice FAISS...")
+    #st.write("Creando índice FAISS...")
     # Concatenar las columnas relevantes en una sola cadena de texto para el embedding
     df['combined_text'] = df.apply(
         lambda row: f"Nombre Ciclo: {row.get('Nombre Ciclo', '')}. Grado: {row.get('Grado', '')}. Familia Profesional: {row.get('Familia Profesional', '')}. Instituto: {row.get('Instituto', '')}. Municipio: {row.get('Municipio', '')}. Provincia: {row.get('Provincia', '')}. Turno: {row.get('Turno', '')}",
@@ -279,7 +260,7 @@ def create_faiss_index(df: pd.DataFrame, model: SentenceTransformer):
     index = faiss.IndexFlatL2(dimension)
     index.add(np.array(embeddings_normalized).astype('float32')) # FAISS requiere float32
 
-    #st.write("Índice FAISS creado.")
+    print("Índice FAISS creado: embeddings normalizado con L2.")
     return index, corpus # Devolvemos también el corpus para poder mapear los resultados
 
 def get_gemini_response(prompt: str):
@@ -352,11 +333,12 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     st.session_state.chat_history.append({"role": "assistant", "content": f"Buscando información relacionada con '{query}'..."})
 
     # Muestra los documentos recuperados para depuración o información al usuario
-    #with st.expander("Ver información recuperada: " + str(top_k) + " opciones más relevantes"):
+    with st.expander("Ver información recuperada: " + str(top_k) + " opciones más relevantes"):
     #    st.write(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
+        print(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
 
-    #st.write("Los datos encontrados a tu pregunta son:")
-    #st.write(context)
+    print("Los datos encontrados a tu pregunta son:")
+    print(context)
 
     evaluar_respuesta(context, query)
 
@@ -367,19 +349,18 @@ def evaluar_respuesta(respuesta_generada: str, context: str):
     Evalúa la respuesta generada por el modelo.
     Compara la respuesta con el contexto proporcionado.
     """
-    # if respuesta and isinstance(respuesta, str):
-    #     return True
-    #     return False
-    # from sentence_transformers import SentenceTransformer
-    # import numpy as np
+    # Verificar que la respuesta y el contexto no estén vacíos
+    if not respuesta_generada or not context:
+        st.warning("La respuesta generada o el contexto están vacíos. Por favor, verifica la información.")
+        return
+
+    print(f"Respuesta generada: {respuesta_generada}")
+    print(f"Contexto: {context}")
+    assert respuesta_generada, "Respuesta generada: está vacía"
+    assert context, "Contexto: está vacío"
 
     # Cargar el modelo de evaluación
     model_Eval = SentenceTransformer(ModeloEvaluacion)
-
-    # print(f"response: {response}")
-    # print(f"context: {context}")
-    # assert response, "Response is empty"
-    # assert context, "Context is empty"
 
     # Generar embeddings
     context_embedding = model_Eval.encode(context, convert_to_numpy=True, normalize_embeddings=True)
@@ -395,12 +376,10 @@ def evaluar_respuesta(respuesta_generada: str, context: str):
     print("Similitud entre contexto y respuesta:", similarity)
 
     # from bert_score import score
-
     # P, R, F1 = score([respuesta_generada], [context], lang="es")
     # print(f"BERTScore (F1): {F1.mean().item()}")
 
     # from rouge_score import rouge_scorer
-
     # scorer = rouge_scorer.RougeScorer(['rouge1', 'rougeL'], use_stemmer=True)
     # scores = scorer.score(context, respuesta_generada)
     # print(f"ROUGE-L score: {scores['rougeL'].fmeasure}")
@@ -428,9 +407,13 @@ def text_to_audio_base64(text, lang='es'):
 
         # Codificar el buffer de audio en base64
         audio_base64 = base64.b64encode(audio_buffer.getvalue()).decode('utf-8')
+        # Limpiar el buffer
+        audio_buffer.close()
+        # Devolver el audio en formato base64
+        print("Audio generado y codificado en base64.")
         return audio_base64
     except Exception as e:
-        st.error(f"Error al generar audio: {e}")
+        print(f"Error al generar audio: {e}")
         return None
 
 # -------------------------------------------------------------------
@@ -519,32 +502,6 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
     # Entrada de voz del usuario (opcional)
     modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
     if modo == "Hablar":
-    #col1, col2 = st.columns([1,12])
-    #with col1:
-        # from audio_recorder_streamlit import audio_recorder
-        # audio_bytes = audio_recorder(
-        #     text="",
-        #     recording_color="#e8b62c",
-        #     neutral_color="#6aa36f",
-        #     icon_name="microphone",
-        #     icon_size="2x",
-        #     #energy_threshold=(-1.0, 1.0),
-        #     energy_threshold=1000,  # Ajusta este valor según tu micrófono
-        #     pause_threshold=5.0,
-        # )
-
-        # # Si se ha grabado audio, procesarlo
-        # if audio_bytes:
-        #     # Guardar el audio en un archivo temporal
-        #     st.audio(audio_bytes, format="audio/wav")
-
-        from streamlit_realtime_audio_recorder import audio_recorder
-        #import streamlit as st
-        import base64
-        import io
-        from pydub import AudioSegment
-        from pydub.exceptions import CouldntDecodeError
-
         col1, col2 = st.columns([1,12])
         with col1:
             result = audio_recorder(
@@ -558,7 +515,7 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                 audio_data = result.get('audioData')
                 if audio_data:
                     # Decodificar el audio base64 y mostrarlo
-                    #st.write("Audio grabado correctamente. Reproduciendo...")
+                    print("Audio grabado correctamente.")
                     audio_bytes = base64.b64decode(audio_data)
                     audio_file = io.BytesIO(audio_bytes)
                     # Mostrar el audio grabado
@@ -605,94 +562,11 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                     if temp_audio_file_path and os.path.exists(temp_audio_file_path):
                         os.remove(temp_audio_file_path)
         else:
-            #st.write("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
+            print("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
             user_query = None
 
-    #with col2:
     else:
         user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
-
-    #modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
-    #if modo == "Escribir":
-    #    user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
-        # if texto:
-        #     st.success(f"Consulta: {texto}")
-    #else:
-        #import streamlit as st
-        # from audio_recorder_streamlit import audio_recorder
-
-        # # Usar el grabador de audio para capturar la entrada del usuario
-        # #audio_bytes = audio_recorder()
-        # audio_bytes = audio_recorder(
-        #     text="",
-        #     recording_color="#e8b62c",
-        #     neutral_color="#6aa36f",
-        #     icon_name="microphone",
-        #     icon_size="3x",
-        #     energy_threshold=(-1.0, 1.0),
-        #     pause_threshold=5.0,
-        # )
-        # # Si se ha grabado audio, procesarlo
-        # if audio_bytes:
-        #     # Guardar el audio en un archivo temporal
-        #     st.audio(audio_bytes, format="audio/wav")
-
-        #     # Reconocer el audio y convertirlo a texto
-        #     recognizer = sr.Recognizer()
-        #     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as temp_audio_file:
-        #         temp_audio_file.write(audio_bytes)
-        #         temp_audio_file_path = temp_audio_file.name
-        #     with sr.AudioFile(temp_audio_file_path) as source:
-        #         audio = recognizer.record(source)
-        #         try:
-        #             text = recognizer.recognize_google(audio, language="es-ES")
-        #             st.write("🗣️ Transcripción:", text)
-        #             user_query = text
-        #         except sr.UnknownValueError:
-        #             st.error("No se pudo entender el audio.")
-        #             user_query = None
-        #         except sr.RequestError:
-        #             st.error("Error al conectarse con el servicio de reconocimiento.")
-        #             user_query = None
-        #     # Si no se ha grabado audio, preguntar al usuario si quiere grabar
-        #     # Si quieres usar un botón para grabar audio, puedes descomentar el siguiente código
-        #     # import sounddevice as sd
-        #     # from scipy.io.wavfile import write
-        #     # import tempfile
-        #     # import speech_recognition as sr
-        #     # st.write("Si prefieres, puedes grabar tu voz en lugar de escribir.")
-        # else:
-        #     st.write("No se ha grabado audio. Puedes escribir tu consulta a continuación.")
-        #     user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
-
-        # Si quieres grabar audio desde el micrófono, puedes usar el siguiente código
-        # duration = 5 # segundos
-        # if st.button("🎤 Grabar voz"):
-        #     st.info("Grabando...")
-        #     fs = 44100
-        #     try:
-        #         recording = sd.rec(int(duration * fs), samplerate=fs, channels=1)
-        #     except sd.PortAudioError as e:
-        #         print("Audio device error:", e)
-        #     sd.wait()
-        #     st.success("Grabación finalizada.")
-
-        #     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as f:
-        #         write(f.name, fs, recording)
-        #         recognizer = sr.Recognizer()
-        #         with sr.AudioFile(f.name) as source:
-        #             audio = recognizer.record(source)
-        #             try:
-        #                 text = recognizer.recognize_google(audio, language="es-ES")
-        #                 st.write("🗣️ Transcripción:", text)
-        #                 user_query = text
-        #             except sr.UnknownValueError:
-        #                 st.error("No se pudo entender el audio.")
-        #             except sr.RequestError:
-        #                 st.error("Error al conectarse con el servicio de reconocimiento.")
-        #else:
-        #    user_query = None
-
 
     # Reemplazar términos específicos en la consulta del usuario para mejorar la búsqueda
     #consulta_modificada = consulta_usuario.replace("Ciudad", "Municipio")
@@ -701,6 +575,7 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                     "Localidad": "Municipio",
                     "Vespertino": "Tarde",
                     "Bilingüe": "Bilingue",
+                    "Bilingue": "Bilingüe",
                     "Nuevo": "Nuevo Ciclo",
                     "Ciclo Formativo": "Ciclo",
                     "Instituto": "Centro Educativo"}
@@ -728,31 +603,18 @@ if st.session_state.excel_data is not None and st.session_state.faiss_index is n
                 st.session_state.model,
                 st.session_state.excel_data
             )
+
         with st.chat_message("assistant"):
             st.write(response)
             # Convertir respuesta del bot a audio base64
             audio_b64 = text_to_audio_base64(response, lang='es')
             if audio_b64:
                 st.audio(f"data:audio/mp3;base64,{audio_b64}", format="audio/mp3")
-                # Alternativa para incrustar el audio directamente en HTML (opcional)
-                # Nota: Streamlit no soporta incrustar audio directamente en HTML de forma nativa.
-                # Puedes usar el siguiente código para incrustar el audio en HTML, pero ten en cuenta que
-                # puede no funcionar en todos los navegadores debido a restricciones de autoplay.
-                # audio_html = f"""
-                # <audio controls autoplay style="width: 100%;">
-                #     <source src="data:audio/mp3;base64,{audio_b64}" type="audio/mp3">
-                #     Tu navegador no soporta el elemento de audio.
-                # </audio>
-                # """
-                # st.markdown(audio_html, unsafe_allow_html=True)
-                # Nota: Streamlit no tiene un botón de "reproducir" nativo para audio como el que puedes incrustar manualmente.
-                # El control "autoplay" intentará reproducir el audio automáticamente, pero el navegador
-                # puede bloquearlo si no ha habido interacción previa del usuario.
-                # Los controles "controls" añaden la barra de reproducción estándar.
 
+        # Añadir la respuesta al historial de chat
         st.session_state.chat_history.append({"role": "assistant", "content": response})
 
-# --- Configuración de la barra lateral y opciones adicionales ---
+# --- Configuración de la BARRA LATERAL: sidebar ---
 #st.image(image, caption='Chatbot de Ciclos Formativos', use_column_width=True)
 
 # Mostrar información del chatbot
@@ -821,11 +683,6 @@ if new_pdf:
 # Opcional: Botón para limpiar el historial de chat
 if st.sidebar.button("Vaciar Chat"):
     st.empty()  # Limpia la pantalla de chat
-    st.session_state.messages.clear()  # Borra el historial de mensajes
-    st.session_state.user_query = ''  # Borra la consulta del usuario
-    st.session_state.chat_history = []  # Borra el historial de chat
-    st.session_state["user_query"] = ''  # Borra la consulta del usuario
-    st.write("Historial de chat vacío. 🎉")
     st.success("Chat vaciado. Puedes empezar de nuevo.")
 
 if st.sidebar.button("Reiniciar Chat"):
