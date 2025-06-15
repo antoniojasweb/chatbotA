@@ -289,7 +289,7 @@ def get_gemini_response(prompt: str):
         st.error(f"Ocurrió un error inesperado: {e}")
         return "Lo siento, ocurrió un error inesperado al procesar tu solicitud."
 
-def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, df: pd.DataFrame, top_k: int = 0):
+def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, df: pd.DataFrame, top_k: int = 10):
     """
     Realiza la consulta RAG:
     1. Embed de la consulta.
@@ -300,6 +300,9 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
 
     if top_k == 0:
         top_k = len(corpus)
+
+    retrieved_docs_text = []
+    retrieved_docs_df= pd.DataFrame()
 
     query_embedding = model.encode([query]).astype('float32')
 
@@ -333,9 +336,11 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     st.session_state.chat_history.append({"role": "assistant", "content": f"Buscando información relacionada con '{query}'..."})
 
     # Muestra los documentos recuperados para depuración o información al usuario
-    with st.expander("Ver información recuperada: " + str(top_k) + " opciones más relevantes"):
+    #with st.expander("Ver información recuperada: " + str(top_k) + " opciones más relevantes"):
     #    st.write(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
-        print(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
+        #print(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
+    print("Documentos recuperados:")
+    print(retrieved_docs_df)
 
     print("Los datos encontrados a tu pregunta son:")
     print(context)
