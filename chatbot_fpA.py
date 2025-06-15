@@ -473,7 +473,7 @@ def grabar_audio2():
                         text = recognizer.recognize_google(audio, language="es-ES")
                         with col2:
                             # Mostrar la transcripción del audio
-                            st.write("🗣️ Transcripción:", text)
+                            st.write("🗣️ ==> ", text)
                         user_query = text
                     except sr.UnknownValueError:
                         st.error("No se pudo entender el audio.")
@@ -682,7 +682,7 @@ if st.session_state.excel_data is None:
 # Preguntar al usuario cómo quiere interactuar con el chatbot
 modo = st.radio("Elige el modo de entrada:", ("Escribir", "Hablar"))
 if modo == "Hablar":
-    user_query = grabar_audio2()  # Grabar audio y convertirlo a texto
+    user_query = grabar_audio()  # Grabar audio y convertirlo a texto
 else:
     user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
 Lanzar_consulta(user_query)
