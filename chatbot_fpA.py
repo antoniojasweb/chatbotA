@@ -292,7 +292,7 @@ def get_gemini_response(prompt: str):
         st.error(f"Ocurrió un error inesperado: {e}")
         return "Lo siento, ocurrió un error inesperado al procesar tu solicitud."
 
-def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, df: pd.DataFrame, top_k: int = 0):
+def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, df: pd.DataFrame, top_k: int = 10):
     """
     Realiza la consulta RAG:
     1. Embed de la consulta.
@@ -537,9 +537,9 @@ def Lanzar_consulta(user_query):
             with st.chat_message("assistant"):
                 st.write(response)
                 # Convertir respuesta del bot a audio base64
-                audio_b64 = text_to_audio_base64(response, lang='es')
-                if audio_b64:
-                    st.audio(f"data:audio/mp3;base64,{audio_b64}", format="audio/mp3")
+                #audio_b64 = text_to_audio_base64(response, lang='es')
+                #if audio_b64:
+                #    st.audio(f"data:audio/mp3;base64,{audio_b64}", format="audio/mp3")
 
             # Añadir la respuesta al historial de chat
             st.session_state.chat_history.append({"role": "assistant", "content": response})
