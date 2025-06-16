@@ -286,10 +286,11 @@ def get_gemini_response(prompt: str):
         else:
             return "Lo siento, no pude obtener una respuesta de la IA. La estructura de la respuesta fue inesperada."
     except requests.exceptions.RequestException as e:
-        st.error(f"Error al conectar con la API de Gemini: {e}. Por favor, verifica tu conexión y clave API.")
+        st.error(f"Error al conectar con la API de Gemini. Por favor, verifica tu conexión y clave API.")
         return "Lo siento, hubo un problema al conectar con el servicio de IA."
     except Exception as e:
-        st.error(f"Ocurrió un error inesperado: {e}")
+        #st.error(f"Ocurrió un error inesperado: {e}")
+        st.error(f"Ocurrió un error inesperado")
         return "Lo siento, ocurrió un error inesperado al procesar tu solicitud."
 
 def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, df: pd.DataFrame, top_k: int = 0):
