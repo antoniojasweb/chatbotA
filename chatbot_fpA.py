@@ -343,15 +343,19 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     #with st.expander("Ver información recuperada: " + str(top_k) + " opciones más relevantes"):
     #    st.write(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
         #print(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
-    print("Documentos recuperados:")
-    print(retrieved_docs_df)
+    
+    #print("Documentos recuperados:")
+    #print(retrieved_docs_df)
 
-    print("Los datos encontrados a tu pregunta son:")
-    print(context)
+    #print("Los datos encontrados a tu pregunta son:")
+    #print(context)
 
-    evaluar_respuesta(context, query)
+    salida = get_gemini_response(prompt_template)
 
-    return get_gemini_response(prompt_template)
+    # Evaluar
+    evaluar_respuesta(salida, context)
+    
+    return salida
 
 def evaluar_respuesta(respuesta_generada: str, context: str):
     """
@@ -494,7 +498,7 @@ def grabar_audio():
 
     return user_query
 
-def Lanzar_consulta(user_query):
+def lanzar_consulta(user_query):
     """
     Lanza la consulta al modelo RAG y muestra la respuesta.
     """
@@ -632,7 +636,7 @@ if modo == "Hablar":
     user_query = grabar_audio()  # Grabar audio y convertirlo a texto
 else:
     user_query = st.chat_input("Haz tu pregunta sobre los ciclos formativos...")
-Lanzar_consulta(user_query)
+lanzar_consulta(user_query)
 
 # -------------------------------------------------------------------
 
