@@ -42,6 +42,7 @@ url = "https://raw.githubusercontent.com/antoniojasweb/chatbot/main/pdf/"
 FilePDF = "25_26_OFERTA_por_Familias.pdf"
 FileExcel = "oferta_formativa_completa.xlsx"
 FileLogo = "Logo.png"
+TituloAPP = "Ciclos Formativos en Extremadura: 25/26"
 
 # --- Modelo de embeddings ---
 # Otro modelo de Sentence Transformers, para Ingés: 'all-MiniLM-L6-v2'
@@ -565,7 +566,7 @@ def mostrar_logo_titulo():
             image = Image.open(FileLogo)
             st.image(image, width=150)
     with col2:
-        st.title("Ciclos Formativos en Extremadura. Curso 25/26")
+        st.title(TituloAPP)
 
 def inicializar_entorno():
     """
@@ -648,7 +649,7 @@ lanzar_consulta(user_query)
 #st.image(image, caption='Chatbot de Ciclos Formativos', use_column_width=True)
 
 # Mostrar información del chatbot
-st.sidebar.header("Chatbot de Ciclos Formativos en Extremadura. Curso 25/26")
+st.sidebar.header(TituloAPP)
 st.sidebar.markdown("""
     Este chatbot te permite hacer preguntas sobre los ciclos formativos en Extremadura: \n
     - Ciclos formativos disponibles
