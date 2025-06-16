@@ -641,26 +641,25 @@ Lanzar_consulta(user_query)
 # Mostrar información del chatbot
 st.sidebar.header("Chatbot de Ciclos Formativos en Extremadura")
 st.sidebar.markdown("""
-    Este chatbot te permite hacer preguntas sobre los ciclos formativos en Extremadura basándose en datos extraídos del PDF indicado. \n
-    Puedes preguntar sobre:
+    Este chatbot te permite hacer preguntas sobre los ciclos formativos en Extremadura: \n
     - Ciclos formativos disponibles
     - Institutos y centros educativos
     - Familias profesionales
     - Grados y niveles de formación
-    - Información sobre turnos y modalidades (diurno, vespertino, bilingüe, nuevos ciclos)
+    - Turnos y modalidades (diurno, vespertino, bilingüe, nuevos ciclos)
     - Y mucho más relacionado con la oferta formativa en Extremadura.
     \n\n
 """)
 
 # Mostrar información del archivo PDF y Excel
-show_datos = st.sidebar.checkbox("¿Mostrar datos utilizados?")
-if show_datos:
-    #st.sidebar.subheader("Información utilizada")
-    st.sidebar.write(f"- Fuente: `{FilePDF}`")
-    #st.sidebar.write(f"- `{FileExcel}`")
+# show_datos = st.sidebar.checkbox("¿Mostrar datos utilizados?")
+# if show_datos:
+#     #st.sidebar.subheader("Información utilizada")
+#     st.sidebar.write(f"- Fuente: `{FilePDF}`")
+#     #st.sidebar.write(f"- `{FileExcel}`")
 
-    if st.session_state.excel_data is not None:
-        st.sidebar.write(f"- Nº Ciclos Formativos: {len(st.session_state.excel_data):,.0f}".replace(",", "."))
+#     if st.session_state.excel_data is not None:
+#         st.sidebar.write(f"- Nº Ciclos Formativos: {len(st.session_state.excel_data):,.0f}".replace(",", "."))
 
     #if st.session_state.model is not None:
     #    st.sidebar.write(f"- Modelo: `{ModeloEmbeddings}`")
