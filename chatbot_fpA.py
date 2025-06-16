@@ -718,5 +718,5 @@ st.sidebar.markdown("""
     ---
     **Desarrollado por:**
     - Antonio J. Abasolo Sierra
-    - José David Honrado García
+    - José David Acedo Honrado
 """)
