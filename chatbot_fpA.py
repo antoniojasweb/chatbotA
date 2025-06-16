@@ -247,11 +247,11 @@ def create_faiss_index(df: pd.DataFrame, model: SentenceTransformer):
     df['combined_text'] = df['combined_text'].fillna('')
 
     corpus = df['combined_text'].tolist()
-    #embeddings = model.encode(corpus, show_progress_bar=True, convert_to_numpy=True, normalize_embeddings=True)
+    embeddings = model.encode(corpus, show_progress_bar=True, convert_to_numpy=True, normalize_embeddings=True)
 
-    embeddings = model.encode(corpus, show_progress_bar=True)
+    #embeddings = model.encode(corpus, show_progress_bar=True)
     # Normalizar los embeddings, para mejorar la búsqueda de similitud: L2 normalization
-    embeddings_normalized = normalize(embeddings, norm='l2')
+    #embeddings_normalized = normalize(embeddings, norm='l2')
 
     # Escalar los embeddings para mejorar la precisión de FAISS: Opcional, pero recomendado
     # Si los embeddings ya están normalizados, este paso es redundante
@@ -296,7 +296,7 @@ def get_gemini_response(prompt: str):
         st.error(f"Ocurrió un error inesperado")
         return "Lo siento, ocurrió un error inesperado al procesar tu solicitud."
 
-def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, df: pd.DataFrame, top_k: int = 0):
+def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, df: pd.DataFrame, top_k: int = 20):
     """
     Realiza la consulta RAG:
     1. Embed de la consulta.
@@ -318,6 +318,7 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
 
     # Recupera los documentos relevantes
     retrieved_docs_text = [corpus[idx] for idx in I[0]]
+
     # También recuperamos las filas completas del DataFrame para más detalles si son necesarios
     retrieved_docs_df = df.iloc[I[0]]
 
@@ -344,10 +345,11 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
 
     # Muestra los documentos recuperados para depuración o información al usuario
     with st.expander("Ver información recuperada: " + str(top_k) + " opciones más relevantes"):
-        st.write(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional', 'Nuevo']])
-        print(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
+        'st.write(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional', 'Nuevo']])
+        'print(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
         st.write(retrieved_docs_text)
-    
+        print(retrieved_docs_text)
+
     #print("Documentos recuperados:")
     #print(retrieved_docs_df)
 
@@ -358,7 +360,7 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
 
     # Evaluar
     evaluar_respuesta(salida, context, query)
-    
+
     return salida
 
 def evaluar_respuesta(respuesta_generada: str, context: str, query: str):
@@ -411,9 +413,9 @@ def evaluar_respuesta(respuesta_generada: str, context: str, query: str):
     else:
         #st.warning("La respuesta generada puede no estar completamente alineada con la información proporcionada. Por favor, verifica la respuesta.")
         st.warning(mensaje)
-        
+
     print("Precisión de la respuesta: {similarity:.2%}")
-        
+
 # -------------------------------------------------------------------
 
 # --- Función para convertir texto a audio y obtenerlo en base64 ---
