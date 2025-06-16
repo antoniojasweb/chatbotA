@@ -198,8 +198,8 @@ def extraer_informacion_pdf(fichero_pdf):
         # Convertir a DataFrame
         df = pd.DataFrame(data)
 
-        # ordenar por la columna Municipio y Código Ciclom, en orden ascendente
-        df.sort_values(['Familia Profesional','Código Ciclo'], ascending=[True, True], inplace=True)
+        # ordenar por la columna Instituto y Nombre Ciclo, en orden ascendente
+        df.sort_values(['Instituto','Nombre Ciclo'], ascending=[True, True], inplace=True)
 
         # Exportar a Excel
         df.to_excel(FileExcel, index=False)
@@ -239,7 +239,7 @@ def create_faiss_index(df: pd.DataFrame, model: SentenceTransformer):
     #st.write("Creando índice FAISS...")
     # Concatenar las columnas relevantes en una sola cadena de texto para el embedding
     df['combined_text'] = df.apply(
-        lambda row: f"Nombre Ciclo: {row.get('Nombre Ciclo', '')}. Grado: {row.get('Grado', '')}. Familia Profesional: {row.get('Familia Profesional', '')}. Instituto: {row.get('Instituto', '')}. Municipio: {row.get('Municipio', '')}. Provincia: {row.get('Provincia', '')}. Turno: {row.get('Turno', '')}",
+        lambda row: f"Nombre Ciclo: {row.get('Nombre Ciclo', '')}. Grado: {row.get('Grado', '')}. Familia Profesional: {row.get('Familia Profesional', '')}. Instituto: {row.get('Instituto', '')}. Municipio: {row.get('Municipio', '')}. Provincia: {row.get('Provincia', '')}. Turno: {row.get('Turno', '')}. Turno: {row.get('Nuevo', '')}",
         axis=1
     )
 
@@ -344,7 +344,7 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
 
     # Muestra los documentos recuperados para depuración o información al usuario
     #with st.expander("Ver información recuperada: " + str(top_k) + " opciones más relevantes"):
-    #    st.write(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
+    #    st.write(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional', 'Nuevo']])
         #print(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
     
     #print("Documentos recuperados:")
