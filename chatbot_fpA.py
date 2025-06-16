@@ -648,7 +648,6 @@ st.sidebar.markdown("""
     - Grados y niveles de formación
     - Turnos y modalidades (diurno, vespertino, bilingüe, nuevos ciclos)
     - Y mucho más relacionado con la oferta formativa en Extremadura.
-    \n
 """)
 
 # Mostrar información del archivo PDF y Excel
