@@ -171,9 +171,9 @@ def extraer_informacion_pdf(fichero_pdf):
                         elif 'Diurno' in text:
                             turno = 'Diurno'
                         elif text in ['Bilingüe', 'Bilingue']:
-                            bilingue = 'Sí'
+                            bilingue = 'Bilingüe'
                         elif 'Nuevo' in text:
-                            nuevo = 'Sí'
+                            nuevo = 'Nuevo'
 
                         # Añadir fila: Sólo si el curso es de 1ºC
                         if "1ºC" in curso:
@@ -609,11 +609,9 @@ def cargar_datos_indice_FAISS(df: pd.DataFrame):
             st.session_state.faiss_index = None
             st.session_state.corpus = None
 
-
-
 # -------------------------------------------------------------------
 # --- Configuración inicial de la aplicación Streamlit ---
-st.set_page_config(page_title="Chatbot de Ciclos Formativos", layout="centered")
+st.set_page_config(page_title="Chatbot de Ciclos Formativos. Curso 25/26", layout="centered")
 
 # Preparación de los datos
 descargar_logo(FileLogo) # Descargar logo del chatbot, si no existe
@@ -650,7 +648,7 @@ lanzar_consulta(user_query)
 #st.image(image, caption='Chatbot de Ciclos Formativos', use_column_width=True)
 
 # Mostrar información del chatbot
-st.sidebar.header("Chatbot de Ciclos Formativos en Extremadura")
+st.sidebar.header("Chatbot de Ciclos Formativos en Extremadura. Curso 25/26")
 st.sidebar.markdown("""
     Este chatbot te permite hacer preguntas sobre los ciclos formativos en Extremadura: \n
     - Ciclos formativos disponibles
