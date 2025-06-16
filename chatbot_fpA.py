@@ -520,7 +520,7 @@ def lanzar_consulta(user_query):
                         "Vespertino": "Tarde",
                         #"Bilingüe": "Bilingue",
                         "Bilingue": "Bilingüe",
-                        "Nuevo": "Nuevo Ciclo",
+                        "Nuevos": "Nuevo"
                         "Ciclo Formativo": "Ciclo",
                         "Instituto": "Centro Educativo"}
 
