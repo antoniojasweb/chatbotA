@@ -332,7 +332,7 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     {context}
     ---
 
-    Basándote ÚNICAMENTE en la información proporcionada anteriormente y en tu conocimiento general, responde a la siguiente pregunta de forma concisa y útil. Solo incluye en tu respuesta los ciclos formativos que coincidan directamente con la consulta del usuario y que estén presentes en la información proporcionada. Si la información proporcionada no es suficiente para responder a la pregunta, indícalo. Muestra la información de forma clara y estructurada por instituto y ciclo formativo. Mostrar los detalles como instituto, nombre del ciclo, grado, turno, municipio (provincia), si son relevantes y no duplican la información, en formato tabla. Ordenar la salida por instituto y nombre del ciclo. Si la provincia es Badajoz sustituirla por BA y si es Cáceres sustituirla por CC.
+    Basándote ÚNICAMENTE en la información proporcionada anteriormente y en tu conocimiento general, responde a la siguiente pregunta de forma concisa y útil. Solo incluye en tu respuesta los ciclos formativos que coincidan directamente con la consulta del usuario y que estén presentes en la información proporcionada. Si la información proporcionada no es suficiente para responder a la pregunta, indícalo. Muestra la información de forma clara y estructurada por instituto y ciclo formativo. Mostrar los detalles como instituto, nombre del ciclo, grado, turno, municipio (provincia), si son relevantes y no duplican la información, en formato tabla. Ordenar la salida por instituto y nombre del ciclo.
 
     Pregunta: {query}
 
