@@ -565,7 +565,7 @@ def mostrar_logo_titulo():
             image = Image.open(FileLogo)
             st.image(image, width=150)
     with col2:
-        st.title("Ciclos Formativos en Extremadura")
+        st.title("Ciclos Formativos en Extremadura. Curso 25/26")
 
 def inicializar_entorno():
     """
@@ -611,7 +611,7 @@ def cargar_datos_indice_FAISS(df: pd.DataFrame):
 
 # -------------------------------------------------------------------
 # --- Configuración inicial de la aplicación Streamlit ---
-st.set_page_config(page_title="Chatbot de Ciclos Formativos. Curso 25/26", layout="centered")
+st.set_page_config(page_title="Chatbot de Ciclos Formativos", layout="centered")
 
 # Preparación de los datos
 descargar_logo(FileLogo) # Descargar logo del chatbot, si no existe
