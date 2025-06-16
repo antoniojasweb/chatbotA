@@ -129,6 +129,8 @@ def extraer_informacion_pdf(fichero_pdf):
                     rgb = color_to_rgb(span["color"])
                     font = span["font"]
                     is_bold = "Bold" in font or "bold" in font.lower()
+                    bilingue = ""
+                    nuevo = ""
 
                     # Familia profesional (verde y mayúsculas)
                     if text.isupper() and rgb[1] > 120 and rgb[0] < 100 and rgb[2] < 100:
