@@ -730,3 +730,10 @@ st.sidebar.markdown("""
     - Antonio Jesús Abasolo Sierra
     - José David Acedo Honrado
 """)
+
+st.download_button(
+    label="Descargar Excel",
+    data=excel_data,
+    file_name="archivo_local.xlsx",
+    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+)
