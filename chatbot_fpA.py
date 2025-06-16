@@ -731,9 +731,14 @@ st.sidebar.markdown("""
     - José David Acedo Honrado
 """)
 
+# Leer el archivo en modo binario
+with open(FileExcel, "rb") as f:
+    excel_bytes = f.read()
+
+# Botón de descarga en Streamlit
 st.download_button(
-    label="Descargar Excel",
-    data=excel_data,
-    file_name="archivo_local.xlsx",
+    label="Descargar archivo Excel 📂",
+    data=excel_bytes,
+    file_name=FileExcel,
     mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
 )
