@@ -292,7 +292,7 @@ def get_gemini_response(prompt: str):
         st.error(f"Ocurrió un error inesperado: {e}")
         return "Lo siento, ocurrió un error inesperado al procesar tu solicitud."
 
-def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, df: pd.DataFrame, top_k: int = 10):
+def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, df: pd.DataFrame, top_k: int = 0):
     """
     Realiza la consulta RAG:
     1. Embed de la consulta.
@@ -328,7 +328,7 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     {context}
     ---
 
-    Basándote ÚNICAMENTE en la información proporcionada anteriormente y en tu conocimiento general, responde a la siguiente pregunta de forma concisa y útil. Si la información proporcionada no es suficiente para responder a la pregunta, indícalo. Muestra la información de forma clara y estructurada por instituto y cliclo formativo, incluyendo detalles como el nombre del ciclo, grado, instituto, municipio, provincia y familia profesional si es relevante.
+    Basándote ÚNICAMENTE en la información proporcionada anteriormente y en tu conocimiento general, responde a la siguiente pregunta de forma concisa y útil. Solo incluye en tu respuesta los ciclos formativos que coincidan directamente con la consulta del usuario y que estén presentes en la información proporcionada. Si la información proporcionada no es suficiente para responder a la pregunta, indícalo. Muestra la información de forma clara y estructurada por instituto y cliclo formativo, incluyendo detalles como el nombre del ciclo, grado, instituto, municipio, provincia y familia profesional si es relevante.
 
     Pregunta: {query}
 
