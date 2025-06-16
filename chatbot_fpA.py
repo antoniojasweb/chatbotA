@@ -292,11 +292,11 @@ def get_gemini_response(prompt: str):
         st.error(f"Ocurrió un error inesperado: {e}")
         return "Lo siento, ocurrió un error inesperado al procesar tu solicitud."
 
-def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, df: pd.DataFrame, top_k: int = 10):
+def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, df: pd.DataFrame, top_k: int = 0):
     """
     Realiza la consulta RAG:
     1. Embed de la consulta.
-    2. Busca documentos relevantes en el índice FAISS.
+    2. Busca DENSA de documentos relevantes en el índice FAISS.
     3. Construye un prompt contextualizado para el LLM.
     4. Llama al LLM para generar la respuesta.
     """
