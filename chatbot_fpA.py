@@ -333,7 +333,20 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     {context}
     ---
 
-    Basándote ÚNICAMENTE en la información proporcionada anteriormente y en tu conocimiento general, responde a la siguiente pregunta de forma concisa y útil. Solo incluye en tu respuesta los ciclos formativos que coincidan directamente con la consulta del usuario y que estén presentes en la información proporcionada. Si la información proporcionada no es suficiente para responder a la pregunta, indícalo. Muestra la información de forma clara y estructurada por instituto y ciclo formativo. Mostrar los detalles como instituto, nombre del ciclo, grado, turno, municipio (provincia), si son relevantes y no duplican la información, en formato tabla. Ordenar la salida por instituto y nombre del ciclo.
+    Basándote ÚNICAMENTE en la información proporcionada anteriormente y en tu conocimiento general, responde a la siguiente pregunta de forma concisa y útil.
+    Contexta solo si tienes evidencia directa en la información proporcionada.
+    Si no tienes información suficiente, indica que no puedes responder.
+    Tu respuesta debe ser clara, estructurada y contener solo la información relevante.
+    No inventes información, no especules ni hagas suposiciones.
+    No repitas la pregunta del usuario, solo responde a la consulta.
+    Si la información proporcionada no es suficiente para responder a la pregunta, indica que no puedes responder.
+    Si la pregunta es sobre ciclos formativos, institutos, grados, turnos, municipios o provincias, responde con la información más precisa y detallada posible.
+    Solo incluye en tu respuesta los ciclos formativos que coincidan directamente con la consulta del usuario y que estén presentes en la información proporcionada.
+    Si la información proporcionada no es suficiente para responder a la pregunta, indícalo.
+    Muestra la información de forma clara y estructurada por instituto y ciclo formativo.
+    Mostrar los detalles como instituto, nombre del ciclo, grado, turno, municipio (provincia), si son relevantes y no duplican la información, en formato tabla.
+    Ordenar la salida por instituto y nombre del ciclo.
+    Toda la información relacionada se encuenta en la url: https://educarex.es/
 
     Pregunta: {query}
 
