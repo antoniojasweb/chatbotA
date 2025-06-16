@@ -44,11 +44,11 @@ FileExcel = "oferta_formativa_completa.xlsx"
 FileLogo = "Logo.png"
 TituloAPP = "Ciclos Formativos en Extremadura: 25/26"
 
-# --- Modelo de embeddings ---
-# Otro modelo de Sentence Transformers, para Ingés: 'all-MiniLM-L6-v2'
+# --- Modelos ---
 ModeloEmbeddings = 'paraphrase-multilingual-MiniLM-L12-v2'
+# Otro modelo para Embeddings, de Sentence Transformers, para Ingés: 'all-MiniLM-L6-v2'
 ModeloEvaluacion = 'all-mpnet-base-v2'  # Modelo para evaluación de respuestas
-# Otros posibles modelos: all-MiniLM-L6-v2, sentence-t5-base, e5-large-v2, etc
+# Otros posibles modelos de Evaluación: all-MiniLM-L6-v2, sentence-t5-base, e5-large-v2, etc
 
 # --- Configuración de la API de Gemini ---
 # Otro modelo posible: imagen-3.0-generate-002
@@ -520,23 +520,22 @@ def lanzar_consulta(user_query):
         #consulta_modificada = consulta_usuario.replace("Vespertino", "Tarde")
         equivalencias = {"Ciudad": "Municipio",
                         "Localidad": "Municipio",
-                        "Vespertino": "Tarde",
-                        #"Bilingüe": "Bilingue",
+                        "Tarde": "Vespertino",
                         "Bilingue": "Bilingüe",
                         "Nuevos": "Nuevo",
                         "Ciclo Formativo": "Ciclo",
-                        "Instituto": "Centro Educativo"}
+                        "Centro Educativo":"Instituto"}
 
         if user_query:
             # Reemplazar términos en la consulta del usuario
             user_query = user_query.strip()  # Limpiar espacios al inicio y final
-            user_query = user_query.replace("?", "")  # Eliminar signos de interrogación
-            user_query = user_query.replace("¿", "")  # Eliminar signos de interrogación al inicio
-            user_query = user_query.replace(".", "")  # Eliminar puntos al final
-            user_query = user_query.replace(",", "")  # Eliminar comas al final
-            user_query = user_query.replace(":", "")  # Eliminar dos puntos al final
-            user_query = user_query.replace(";", "")  # Eliminar punto y coma al final
-            user_query = user_query.replace("  ", " ")  # Eliminar dobles espacios
+            # user_query = user_query.replace("?", "")  # Eliminar signos de interrogación
+            # user_query = user_query.replace("¿", "")  # Eliminar signos de interrogación al inicio
+            # user_query = user_query.replace(".", "")  # Eliminar puntos al final
+            # user_query = user_query.replace(",", "")  # Eliminar comas al final
+            # user_query = user_query.replace(":", "")  # Eliminar dos puntos al final
+            # user_query = user_query.replace(";", "")  # Eliminar punto y coma al final
+            # user_query = user_query.replace("  ", " ")  # Eliminar dobles espacios
 
             # Reemplazar equivalencias en la consulta del usuario
             for clave, valor in equivalencias.items():
