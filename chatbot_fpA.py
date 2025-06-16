@@ -729,6 +729,7 @@ st.sidebar.markdown("""
     **Desarrollado por:**
     - Antonio Jesús Abasolo Sierra
     - José David Acedo Honrado
+    ---
 """)
 
 # Leer el archivo en modo binario
