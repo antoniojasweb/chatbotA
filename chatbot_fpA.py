@@ -116,8 +116,8 @@ def extraer_informacion_pdf(fichero_pdf):
     turno = "Diurno"  # Valor por defecto
     instituto = ""
     municipio = ""
-    bilingue = ""
-    nuevo = ""
+    bilingue = "No"
+    nuevo = "No"
 
     # Recorrer cada página y extraer información
     for page in doc:
@@ -129,8 +129,8 @@ def extraer_informacion_pdf(fichero_pdf):
                     rgb = color_to_rgb(span["color"])
                     font = span["font"]
                     is_bold = "Bold" in font or "bold" in font.lower()
-                    bilingue = ""
-                    nuevo = ""
+                    bilingue = "No"
+                    nuevo = "No"
 
                     # Familia profesional (verde y mayúsculas)
                     if text.isupper() and rgb[1] > 120 and rgb[0] < 100 and rgb[2] < 100:
@@ -174,9 +174,9 @@ def extraer_informacion_pdf(fichero_pdf):
                         elif 'Diurno' in text:
                             turno = 'Diurno'
                         elif text in ['Bilingüe', 'Bilingue']:
-                            bilingue = 'Bilingüe'
+                            bilingue = 'Sí'
                         elif 'Nuevo' in text:
-                            nuevo = 'Nuevo'
+                            nuevo = 'Sí'
 
                         # Añadir fila: Sólo si el curso es de 1ºC
                         if "1ºC" in curso:
