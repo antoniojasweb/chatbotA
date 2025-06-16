@@ -618,7 +618,7 @@ mostrar_logo_titulo()  # Mostrar el logo del chatbot
 inicializar_entorno()   # Inicializar el entorno de la aplicación
 cargar_modelo()  # Cargar el modelo de embeddings
 cargar_datos_indice_FAISS(df)  # Cargar los datos del DataFrame y crear el índice FAISS
-st.success("¡Chatbot iniciado correctamente! Ahora puedes hacer preguntas.")
+st.sidebar.success("¡Chatbot iniciado correctamente! Ahora puedes hacer preguntas.")
 
 # Mostrar historial de chat
 # for message in st.session_state.chat_history:
@@ -648,7 +648,7 @@ st.sidebar.markdown("""
     - Grados y niveles de formación
     - Turnos y modalidades (diurno, vespertino, bilingüe, nuevos ciclos)
     - Y mucho más relacionado con la oferta formativa en Extremadura.
-    \n\n
+    \n
 """)
 
 # Mostrar información del archivo PDF y Excel
