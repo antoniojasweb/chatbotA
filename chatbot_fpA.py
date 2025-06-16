@@ -67,31 +67,33 @@ def color_to_rgb(color_int):
 
 # Descargar el fichero del logo del chatbot
 def descargar_logo(fichero_logo):
-    FileURL = url + fichero_logo
-    if not os.path.exists(fichero_logo):
-        response = requests.get(FileURL)
-        # Verificamos que la solicitud fue exitosa
-        if response.status_code == 200:
-            # Abrimos el archivo en modo de lectura binaria
-            with open(FileLogo, 'wb') as file:
-                file.write(response.content)
-            print("Logo descargado: " + fichero_logo)
-        else:
-            print(f"Error al descargar el logo: {response.status_code}")
+    if not os.path.exists(FileLogo):
+        FileURL = url + fichero_logo
+        if not os.path.exists(fichero_logo):
+            response = requests.get(FileURL)
+            # Verificamos que la solicitud fue exitosa
+            if response.status_code == 200:
+                # Abrimos el archivo en modo de lectura binaria
+                with open(FileLogo, 'wb') as file:
+                    file.write(response.content)
+                print("Logo descargado: " + fichero_logo)
+            else:
+                print(f"Error al descargar el logo: {response.status_code}")
 
 # Descargar fichero PDF desde URL
 def descargar_pdf(fichero_pdf):
-    FileURL = url + fichero_pdf
-    if not os.path.exists(fichero_pdf):
-        response = requests.get(FileURL)
-        # Verificamos que la solicitud fue exitosa
-        if response.status_code == 200:
-            # Abrimos el archivo PDF en modo de lectura binaria
-            with open(FilePDF, 'wb') as file:
-                file.write(response.content)
-            print("Fichero PDF: " + fichero_pdf + " descargado.")
-        else:
-            print(f"Error al descargar el PDF: {response.status_code}")
+    if not os.path.exists(FilePDF):
+        FileURL = url + fichero_pdf
+        if not os.path.exists(fichero_pdf):
+            response = requests.get(FileURL)
+            # Verificamos que la solicitud fue exitosa
+            if response.status_code == 200:
+                # Abrimos el archivo PDF en modo de lectura binaria
+                with open(FilePDF, 'wb') as file:
+                    file.write(response.content)
+                print("Fichero PDF: " + fichero_pdf + " descargado.")
+            else:
+                print(f"Error al descargar el PDF: {response.status_code}")
 
 # Extraer información del PDF y guardarla en un DataFrame
 def extraer_informacion_pdf(fichero_pdf):
@@ -491,29 +493,6 @@ def grabar_audio():
 
     return user_query
 
-# def grabar_audio2():
-#     """
-#     Graba audio desde el micrófono y lo convierte a texto.
-#     """
-#     recognizer = sr.Recognizer()
-#     with sr.Microphone() as source:
-#         st.write("Grabando...")
-#         audio = recognizer.listen(source)
-#         st.write("Grabación finalizada.")
-#         try:
-#             text = recognizer.recognize_google(audio, language='es-ES')
-#             with col2:
-#                 # Mostrar la transcripción del audio
-#                 st.write("🗣️ ==> ", text)
-#             #st.write(f"Texto reconocido: {text}")
-#             return text
-#         except sr.UnknownValueError:
-#             st.error("No se pudo reconocer el audio.")
-#             return None
-#         except sr.RequestError as e:
-#             st.error(f"Error al conectar con el servicio de reconocimiento de voz: {e}")
-#             return None
-
 def Lanzar_consulta(user_query):
     """
     Lanza la consulta al modelo RAG y muestra la respuesta.
@@ -565,81 +544,81 @@ def Lanzar_consulta(user_query):
             # Añadir la respuesta al historial de chat
             st.session_state.chat_history.append({"role": "assistant", "content": response})
 
+def mostrar_logo_titulo():
+    """
+    Muestra el logo del chatbot en la aplicación Streamlit.
+    """
+    col1, col2 = st.columns([1,2])
+    with col1:
+        if os.path.exists(FileLogo):
+            image = Image.open(FileLogo)
+            st.image(image, width=150)
+    with col2:
+        st.title("Ciclos Formativos en Extremadura")
+
+def inicializar_entorno():
+    """
+    Inicializa el entorno de la aplicación Streamlit.
+    Configura las variables de sesión necesarias.
+    """
+    if 'model' not in st.session_state:
+        st.session_state.model = None  # Modelo de embeddings
+    if 'excel_data' not in st.session_state:
+        st.session_state.excel_data = None  # Datos del DataFrame
+    if 'faiss_index' not in st.session_state:
+        st.session_state.faiss_index = None  # Índice FAISS
+    if 'corpus' not in st.session_state:
+        st.session_state.corpus = None  # Corpus de documentos
+    if 'chat_history' not in st.session_state:
+        st.session_state.chat_history = []  # Historial de chat
+
+def cargar_modelo():
+    """
+    Carga el modelo de embeddings y lo guarda en el estado de la sesión.
+    """
+    if st.session_state.model is None:
+        st.session_state.model = load_embedding_model()
+        print("Modelo de embeddings cargado y guardado en el estado de la sesión.")
+    else:
+        print("El modelo de embeddings ya está cargado en el estado de la sesión.")
+
+def cargar_datos_indice_FAISS(df: pd.DataFrame):
+    """
+    Carga los datos del DataFrame y crea el índice FAISS.
+    Si los datos ya están cargados, no hace nada.
+    """
+    if st.session_state.excel_data is None:
+        try:
+            st.session_state.excel_data = df
+            st.session_state.faiss_index, st.session_state.corpus = create_faiss_index(st.session_state.excel_data, st.session_state.model)
+            print("Datos cargados y índice FAISS creado.")
+        except Exception as e:
+            st.error(f"Error al cargar los datos o crear el índice: {e}")
+            st.session_state.excel_data = None
+            st.session_state.faiss_index = None
+            st.session_state.corpus = None
+
+
+
 # -------------------------------------------------------------------
-# --- Comprobación de existencia de archivos y carga de datos ---
-# Comprobar si el archivo PDF existe, si no, descargarlo
-if not os.path.exists(FilePDF):
-    descargar_pdf(FilePDF)
+# --- Configuración inicial de la aplicación Streamlit ---
+st.set_page_config(page_title="Chatbot de Ciclos Formativos", layout="centered")
 
-# Extraer información del PDF y crear el DataFrame
-df = extraer_informacion_pdf(FilePDF)
-
-# Descargar el logo del chatbot si no existe
-if not os.path.exists(FileLogo):
-    descargar_logo(FileLogo)
-image = Image.open(FileLogo)
-
+# Preparación de los datos
+descargar_logo(FileLogo) # Descargar logo del chatbot, si no existe
+descargar_pdf(FilePDF) # Descargar el PDF, i no existe
+df = extraer_informacion_pdf(FilePDF) # Extraer información del PDF y crear el DataFrame
 # Mostrar las primeras filas del DataFrame para verificar que se ha cargado correctamente
 #st.write(df.head())
 #st.dataframe(df.head())  # Alternativa para mostrar el DataFrame de forma interactiva
 #st.write("Datos cargados desde el archivo Excel existente.")
-#df.head()
-# -------------------------------------------------------------------
 
-# -------------------------------------------------------------------
-# --- Configuración de la aplicación Streamlit ---
-st.set_page_config(page_title="Chatbot de Ciclos Formativos", layout="centered")
-
-# Mostrar el logo del chatbot
-#st.image(image, caption='Chatbot-FP', width=200)
-#st.title("📚 Chatbot de Ciclos Formativos")
-
-col1, col2 = st.columns([1,2])
-with col1:
-    st.image(image, width=150)
-with col2:
-    st.title("Ciclos Formativos en Extremadura")
-
-# Inicializar el estado de la sesión si no existe
-if "chat_history" not in st.session_state:
-    st.session_state.chat_history = []
-if "excel_data" not in st.session_state:
-    st.session_state.excel_data = None
-if "faiss_index" not in st.session_state:
-    st.session_state.faiss_index = None
-if "model" not in st.session_state:
-    st.session_state.model = None
-if "corpus" not in st.session_state:
-    st.session_state.corpus = None
-
-# Cargar el modelo de embeddings solo una vez
-if st.session_state.model is None:
-    # Mostrar mensaje de preparación del entorno
-    st.write("Preparando el entorno (esto puede tardar unos segundos)...")
-    st.session_state.model = load_embedding_model()
-
-if st.session_state.excel_data is None:
-    try:
-        # Asegurarse de que las columnas esperadas existan o manejar su ausencia
-        required_cols = ['Familia Profesional', 'Grado', 'Código Ciclo', 'Nombre Ciclo', 'Instituto', 'Municipio', 'Provincia', 'Turno', 'Bilingüe', 'Nuevo']
-        missing_cols = [col for col in required_cols if col not in df.columns]
-        if missing_cols:
-            st.warning(f"Columnas faltantes en el Excel: {', '.join(missing_cols)}. El chatbot podría no funcionar correctamente.")
-            # Intentar crear las columnas faltantes con valores vacíos para que el script no falle
-            for col in missing_cols:
-                df[col] = ''
-
-        st.session_state.excel_data = df
-        st.session_state.faiss_index, st.session_state.corpus = create_faiss_index(st.session_state.excel_data, st.session_state.model)
-        st.success("¡Chatbot iniciado correctamente! Ahora puedes hacer preguntas.")
-
-        # Limpiar historial de chat al cargar un nuevo archivo
-        st.session_state.chat_history = []
-    except Exception as e:
-        st.error(f"Error al leer el archivo de datos o crear el índice: {e}")
-        st.session_state.excel_data = None
-        st.session_state.faiss_index = None
-        st.session_state.corpus = None
+# Preparar el entorno de la aplicación
+mostrar_logo_titulo()  # Mostrar el logo del chatbot
+inicializar_entorno()   # Inicializar el entorno de la aplicación
+cargar_modelo()  # Cargar el modelo de embeddings
+cargar_datos_indice_FAISS(df)  # Cargar los datos del DataFrame y crear el índice FAISS
+st.success("¡Chatbot iniciado correctamente! Ahora puedes hacer preguntas.")
 
 # Mostrar historial de chat
 # for message in st.session_state.chat_history:
@@ -668,7 +647,7 @@ st.sidebar.markdown("""
     - Institutos y centros educativos
     - Familias profesionales
     - Grados y niveles de formación
-    - Información sobre turnos y modalidades (diurno, vespertino, bilingüe, etc.)
+    - Información sobre turnos y modalidades (diurno, vespertino, bilingüe, nuevos ciclos)
     - Y mucho más relacionado con la oferta formativa en Extremadura.
     \n\n
 """)
@@ -723,18 +702,18 @@ if show_datos:
 #        st.sidebar.write("No hay mensajes en el historial de chat.")
 
 # Opcional: Botón para limpiar el historial de chat
-if st.sidebar.button("Vaciar Chat"):
-    st.session_state.chat_history = []  # Reiniciar el historial de chat
-    st.session_state.messages = []  # Reiniciar los mensajes
-    st.empty()  # Limpia la pantalla de chat
-    st.success("Chat vaciado. Puedes empezar de nuevo.")
+# if st.sidebar.button("Vaciar Chat"):
+#     st.session_state.chat_history = []  # Reiniciar el historial de chat
+#     st.session_state.messages = []  # Reiniciar los mensajes
+#     st.empty()  # Limpia la pantalla de chat
+#     st.success("Chat vaciado. Puedes empezar de nuevo.")
 
-if st.sidebar.button("Reiniciar Chat"):
-    st.session_state.clear()  # Borra todas las variables de sesión
-    st.empty()  # Limpia la pantalla de chat
-    st.session_state.chat_history = []  # Reiniciar el historial de chat
-    st.rerun()
-    st.success("Chat reiniciado. Puedes empezar de nuevo.")
+# if st.sidebar.button("Reiniciar Chat"):
+#     st.session_state.clear()  # Borra todas las variables de sesión
+#     st.empty()  # Limpia la pantalla de chat
+#     st.session_state.chat_history = []  # Reiniciar el historial de chat
+#     st.rerun()
+#     st.success("Chat reiniciado. Puedes empezar de nuevo.")
 
 # Footer
 st.sidebar.markdown("""
