@@ -116,8 +116,8 @@ def extraer_informacion_pdf(fichero_pdf):
     turno = "Diurno"  # Valor por defecto
     instituto = ""
     municipio = ""
-    bilingue = "No"
-    nuevo = "No"
+    bilingue = ""
+    nuevo = ""
 
     # Recorrer cada página y extraer información
     for page in doc:
@@ -129,8 +129,8 @@ def extraer_informacion_pdf(fichero_pdf):
                     rgb = color_to_rgb(span["color"])
                     font = span["font"]
                     is_bold = "Bold" in font or "bold" in font.lower()
-                    bilingue = "No"
-                    nuevo = "No"
+                    bilingue = ""
+                    nuevo = ""
 
                     # Familia profesional (verde y mayúsculas)
                     if text.isupper() and rgb[1] > 120 and rgb[0] < 100 and rgb[2] < 100:
@@ -174,9 +174,9 @@ def extraer_informacion_pdf(fichero_pdf):
                         elif 'Diurno' in text:
                             turno = 'Diurno'
                         elif text in ['Bilingüe', 'Bilingue']:
-                            bilingue = 'Sí'
+                            bilingue = 'bilingüe'
                         elif 'Nuevo' in text:
-                            nuevo = 'Sí'
+                            nuevo = 'Nuevo'
 
                         # Añadir fila: Sólo si el curso es de 1ºC
                         if "1ºC" in curso:
@@ -345,7 +345,7 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     Muestra la información de forma clara y estructurada por instituto y ciclo formativo.
     Mostrar los detalles como instituto, nombre del ciclo, grado, turno, municipio (provincia), si son relevantes y no duplican la información, en formato tabla.
     Ordenar la salida por instituto y nombre del ciclo.
-    Un ciclo es nuevo si en el campo "Nuevo" del Excel está marcado como "Sí".
+    Un ciclo es nuevo si en el campo "Nuevo" del Excel está marcado como "Nuevo".
     Toda la información relacionada se encuenta en la url: https://educarex.es/
 
     Pregunta: {query}
