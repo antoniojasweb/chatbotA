@@ -296,7 +296,7 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     """
     Realiza la consulta RAG:
     1. Embed de la consulta.
-    2. Busca DENSA de documentos relevantes en el índice FAISS.
+    2. Búsqueda DENSA de documentos relevantes en el índice FAISS.
     3. Construye un prompt contextualizado para el LLM.
     4. Llama al LLM para generar la respuesta.
     """
@@ -618,7 +618,7 @@ mostrar_logo_titulo()  # Mostrar el logo del chatbot
 inicializar_entorno()   # Inicializar el entorno de la aplicación
 cargar_modelo()  # Cargar el modelo de embeddings
 cargar_datos_indice_FAISS(df)  # Cargar los datos del DataFrame y crear el índice FAISS
-st.sidebar.success("¡Chatbot iniciado correctamente! Ahora puedes hacer preguntas.")
+st.sidebar.success("¡Chatbot iniciado correctamente!")  # Mensaje de éxito en la barra lateral
 
 # Mostrar historial de chat
 # for message in st.session_state.chat_history:
