@@ -736,7 +736,7 @@ with open(FileExcel, "rb") as f:
     excel_bytes = f.read()
 
 # Botón de descarga en Streamlit
-st.download_button(
+st.sidebar.download_button(
     label="Descargar archivo Excel 📂",
     data=excel_bytes,
     file_name=FileExcel,
