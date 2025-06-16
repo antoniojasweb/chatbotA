@@ -116,8 +116,8 @@ def extraer_informacion_pdf(fichero_pdf):
     turno = "Diurno"  # Valor por defecto
     instituto = ""
     municipio = ""
-    bilingue = "No"
-    nuevo = "No"
+    bilingue = ""
+    nuevo = ""
 
     # Recorrer cada página y extraer información
     for page in doc:
