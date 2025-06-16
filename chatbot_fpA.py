@@ -400,13 +400,15 @@ def evaluar_respuesta(respuesta_generada: str, context: str, query: str):
     # print(f"ROUGE-L score: {scores['rougeL'].fmeasure}")
 
     # Si la similitud es alta, la respuesta es relevante
-    mensaje = f"Petición del usuario: {query} => {similarity:.2%}"
+    mensaje = f"Petición del usuario: {query}"
     if similarity > 0.7:  # Umbral de similitud, puedes ajustarlo
         #st.success("La respuesta generada es relevante y está basada en la información proporcionada.")
         st.success(mensaje)
     else:
         #st.warning("La respuesta generada puede no estar completamente alineada con la información proporcionada. Por favor, verifica la respuesta.")
         st.warning(mensaje)
+        
+    print("Precisión de la respuesta: {similarity:.2%}")
         
 # -------------------------------------------------------------------
 
