@@ -329,7 +329,7 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     {context}
     ---
 
-    Basándote ÚNICAMENTE en la información proporcionada anteriormente y en tu conocimiento general, responde a la siguiente pregunta de forma concisa y útil. Solo incluye en tu respuesta los ciclos formativos que coincidan directamente con la consulta del usuario y que estén presentes en la información proporcionada. Si la información proporcionada no es suficiente para responder a la pregunta, indícalo. Muestra la información de forma clara y estructurada por instituto y después por ciclo formativo, incluyendo detalles como el grado, municipio (provincia) y familia profesional si es relevante. Presenta los datos de los ciclos formativos en formato tabla, si resulta más claro.
+    Basándote ÚNICAMENTE en la información proporcionada anteriormente y en tu conocimiento general, responde a la siguiente pregunta de forma concisa y útil. Solo incluye en tu respuesta los ciclos formativos que coincidan directamente con la consulta del usuario y que estén presentes en la información proporcionada. Si la información proporcionada no es suficiente para responder a la pregunta, indícalo. Muestra la información de forma clara y estructurada por instituto y después por ciclo formativo, incluyendo detalles como el grado, municipio (provincia) y familia profesional si es relevante. Presenta los datos de los ciclos formativos en formato tabla.
 
     Pregunta: {query}
 
