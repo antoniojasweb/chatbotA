@@ -346,6 +346,7 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     with st.expander("Ver información recuperada: " + str(top_k) + " opciones más relevantes"):
         st.write(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional', 'Nuevo']])
         print(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
+        st.write(retrieved_docs_text)
     
     #print("Documentos recuperados:")
     #print(retrieved_docs_df)
