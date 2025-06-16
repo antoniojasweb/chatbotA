@@ -343,8 +343,8 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     st.session_state.chat_history.append({"role": "assistant", "content": f"Buscando información relacionada con '{query}'..."})
 
     # Muestra los documentos recuperados para depuración o información al usuario
-    #with st.expander("Ver información recuperada: " + str(top_k) + " opciones más relevantes"):
-    #    st.write(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional', 'Nuevo']])
+    with st.expander("Ver información recuperada: " + str(top_k) + " opciones más relevantes"):
+        st.write(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional', 'Nuevo']])
         #print(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
     
     #print("Documentos recuperados:")
