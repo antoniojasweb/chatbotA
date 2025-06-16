@@ -247,9 +247,9 @@ def create_faiss_index(df: pd.DataFrame, model: SentenceTransformer):
     df['combined_text'] = df['combined_text'].fillna('')
 
     corpus = df['combined_text'].tolist()
-    embeddings = model.encode(corpus, show_progress_bar=True, convert_to_numpy=True, normalize_embeddings=True)
+    #embeddings = model.encode(corpus, show_progress_bar=True, convert_to_numpy=True, normalize_embeddings=True)
 
-    #embeddings = model.encode(corpus, show_progress_bar=True)
+    embeddings = model.encode(corpus, show_progress_bar=True)
     # Normalizar los embeddings, para mejorar la búsqueda de similitud: L2 normalization
     #embeddings_normalized = normalize(embeddings, norm='l2')
 
@@ -262,9 +262,9 @@ def create_faiss_index(df: pd.DataFrame, model: SentenceTransformer):
     #embeddings_scaled = scaler.fit_transform(embeddings_normalized)
 
     # Crear un índice FAISS Flat (Simple)
-    dimension = embeddings_normalized.shape[1]
+    dimension = embeddings.shape[1]
     index = faiss.IndexFlatL2(dimension)
-    index.add(np.array(embeddings_normalized).astype('float32')) # FAISS requiere float32
+    index.add(np.array(embeddings).astype('float32')) # FAISS requiere float32
 
     print("Índice FAISS creado: embeddings normalizado con L2.")
     return index, corpus # Devolvemos también el corpus para poder mapear los resultados
@@ -345,8 +345,8 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
 
     # Muestra los documentos recuperados para depuración o información al usuario
     with st.expander("Ver información recuperada: " + str(top_k) + " opciones más relevantes"):
-        'st.write(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional', 'Nuevo']])
-        'print(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
+        #st.write(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional', 'Nuevo']])
+        #print(retrieved_docs_df[['Nombre Ciclo', 'Grado', 'Instituto', 'Municipio', 'Provincia', 'Familia Profesional']])
         st.write(retrieved_docs_text)
         print(retrieved_docs_text)
 
