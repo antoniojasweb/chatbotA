@@ -367,9 +367,9 @@ def evaluar_respuesta(respuesta_generada: str, context: str, query: str):
         st.warning("La respuesta generada o el contexto están vacíos. Por favor, verifica la información.")
         return
 
-    print(f"Contexto: {query}")
-    print(f"Contexto: {context}")
-    print(f"Respuesta generada: {respuesta_generada}")
+    #print(f"Contexto: {query}")
+    #print(f"Contexto: {context}")
+    #print(f"Respuesta generada: {respuesta_generada}")
     assert query, "Pregunta: está vacía"
     assert context, "Contexto: está vacío"
     assert respuesta_generada, "Respuesta generada: está vacía"
