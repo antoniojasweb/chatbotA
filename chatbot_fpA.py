@@ -188,10 +188,9 @@ def extraer_informacion_pdf(fichero_pdf):
                                 "Instituto": instituto.strip(),
                                 "Municipio": municipio.title().strip(),
                                 "Provincia": provincia_actual.title().strip(),
-                                #"Curso": curso.strip(),
                                 "Turno": turno,
-                                "Bilingüe": bilingue,
-                                "Nuevo": nuevo
+                                "Idiomas": bilingue,
+                                "Inicial": nuevo
                             })
 
     if data:
@@ -208,7 +207,7 @@ def extraer_informacion_pdf(fichero_pdf):
         print("No se encontraron datos válidos en el PDF.")
         df = pd.DataFrame(columns=[
             "Familia Profesional", "Código Ciclo", "Nombre Ciclo", "Grado",
-            "Instituto", "Municipio", "Provincia", "Turno", "Bilingüe", "Nuevo"
+            "Instituto", "Municipio", "Provincia", "Turno", "Idiomas", "Inicial"
         ])
 
     # Si quieres mostrar el DataFrame en Streamlit, puedes descomentar la siguiente línea
@@ -239,7 +238,7 @@ def create_faiss_index(df: pd.DataFrame, model: SentenceTransformer):
     #st.write("Creando índice FAISS...")
     # Concatenar las columnas relevantes en una sola cadena de texto para el embedding
     df['combined_text'] = df.apply(
-        lambda row: f"Nombre Ciclo: {row.get('Nombre Ciclo', '')}. Grado: {row.get('Grado', '')}. Familia Profesional: {row.get('Familia Profesional', '')}. Instituto: {row.get('Instituto', '')}. Municipio: {row.get('Municipio', '')}. Provincia: {row.get('Provincia', '')}. Turno: {row.get('Turno', '')}. Nuevo: {row.get('Nuevo', '')}",
+        lambda row: f"Nombre Ciclo: {row.get('Nombre Ciclo', '')}. Grado: {row.get('Grado', '')}. Familia Profesional: {row.get('Familia Profesional', '')}. Instituto: {row.get('Instituto', '')}. Municipio: {row.get('Municipio', '')}. Provincia: {row.get('Provincia', '')}. Turno: {row.get('Turno', '')}. Inicial: {row.get('Inicial', '')}",
         axis=1
     )
 
@@ -247,9 +246,9 @@ def create_faiss_index(df: pd.DataFrame, model: SentenceTransformer):
     df['combined_text'] = df['combined_text'].fillna('')
 
     corpus = df['combined_text'].tolist()
-    #embeddings = model.encode(corpus, show_progress_bar=True, convert_to_numpy=True, normalize_embeddings=True)
+    embeddings = model.encode(corpus, show_progress_bar=True, convert_to_numpy=True, normalize_embeddings=True)
 
-    embeddings = model.encode(corpus, show_progress_bar=True)
+    #embeddings = model.encode(corpus, show_progress_bar=True)
     # Normalizar los embeddings, para mejorar la búsqueda de similitud: L2 normalization
     #embeddings_normalized = normalize(embeddings, norm='l2')
 
