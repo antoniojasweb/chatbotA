@@ -353,11 +353,11 @@ def ask_rag_model(query: str, index, corpus: list, model: SentenceTransformer, d
     salida = get_gemini_response(prompt_template)
 
     # Evaluar
-    evaluar_respuesta(salida, context)
+    evaluar_respuesta(salida, context, query)
     
     return salida
 
-def evaluar_respuesta(respuesta_generada: str, context: str):
+def evaluar_respuesta(respuesta_generada: str, context: str, query: str):
     """
     Evalúa la respuesta generada por el modelo.
     Compara la respuesta con el contexto proporcionado.
@@ -400,10 +400,12 @@ def evaluar_respuesta(respuesta_generada: str, context: str):
     # Si la similitud es alta, la respuesta es relevante
     if similarity > 0.6:  # Umbral de similitud, puedes ajustarlo
         #st.success("La respuesta generada es relevante y está basada en la información proporcionada.")
-        st.success(" ")
+        st.success(query)
     else:
         #st.warning("La respuesta generada puede no estar completamente alineada con la información proporcionada. Por favor, verifica la respuesta.")
-        st.warning(" ")
+        st.warning(query)
+        
+    #return similarity
 # -------------------------------------------------------------------
 
 # --- Función para convertir texto a audio y obtenerlo en base64 ---
